@@ -1,12 +1,12 @@
-package br.com.technomori.pedidos;
+package br.com.technomori.ordermanager;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GerenciadorPedidosApplication {
+public class OrderManagerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GerenciadorPedidosApplication.class, args);
+		SpringApplication.run(OrderManagerApplication.class, args);
 	}
 }
