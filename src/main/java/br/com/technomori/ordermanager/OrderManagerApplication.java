@@ -8,9 +8,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import br.com.technomori.ordermanager.domain.Category;
+import br.com.technomori.ordermanager.domain.City;
 import br.com.technomori.ordermanager.domain.Product;
+import br.com.technomori.ordermanager.domain.State;
 import br.com.technomori.ordermanager.repositories.CategoryRepository;
+import br.com.technomori.ordermanager.repositories.CityRepository;
 import br.com.technomori.ordermanager.repositories.ProductRepository;
+import br.com.technomori.ordermanager.repositories.StateRepository;
 
 @SpringBootApplication
 public class OrderManagerApplication implements CommandLineRunner {
@@ -20,6 +24,12 @@ public class OrderManagerApplication implements CommandLineRunner {
 	
 	@Autowired
 	private ProductRepository productRepository;
+	
+	@Autowired
+	private StateRepository stateRepository;
+	
+	@Autowired
+	private CityRepository cityRepository;
 	
 	
 	public static void main(String[] args) {
@@ -52,6 +62,18 @@ public class OrderManagerApplication implements CommandLineRunner {
 				.build();
 		
 		productRepository.saveAll(Arrays.asList(computer,printer,mouse));
+		
+		
+		State sp = State.builder().name("SP").build();
+		State mg = State.builder().name("MG").build();
+		
+		stateRepository.saveAll(Arrays.asList(sp,mg));
+
+		City saopaulo = City.builder().name("São Paulo").state(sp).build();
+		City campinas = City.builder().name("Campinas").state(sp).build();
+		City uberlandia = City.builder().name("Uberlândia").state(mg).build();
+		
+		cityRepository.saveAll(Arrays.asList(saopaulo,campinas,uberlandia));
 		
 	}
 }
