@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.technomori.ordermanager.domain.Category;
 import br.com.technomori.ordermanager.repositories.CategoryRepository;
+import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundException;
 
 @Service
 public class CategoryService {
@@ -14,8 +15,13 @@ public class CategoryService {
 	@Autowired
 	private CategoryRepository repository;
 	
-	public Category fetch(Integer id) {
+	public Category fetch(Integer id) throws ObjectNotFoundException {
+		
 		Optional<Category> ret = repository.findById(id);
-		return ret.orElse(null);
+
+		return ret.orElseThrow(
+			() -> new ObjectNotFoundException("Object not found: TYPE: "+Category.class.getName()+", ID: "+id)
+		);
+
 	}
 }

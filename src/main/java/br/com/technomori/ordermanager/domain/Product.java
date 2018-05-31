@@ -8,6 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +29,7 @@ public class Product {
 	private String name;
 	private Double price;
 	
+	@JsonBackReference
 	@ManyToMany
 	@Singular
 	private List<Category> categories;

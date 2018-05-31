@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,6 +31,7 @@ public class Category {
 
 	private String name;
 
+	@JsonManagedReference
 	@ManyToMany(mappedBy="categories")
 	@Setter(value=lombok.AccessLevel.PRIVATE)
 	@Builder.Default
