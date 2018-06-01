@@ -49,4 +49,9 @@ public class Customer {
 	@OneToMany(mappedBy="customer", orphanRemoval=true)
 	@Setter(value=AccessLevel.NONE)
 	private List<Address> addresses;
+	
+	@JsonManagedReference
+	@OneToMany(mappedBy="customer", orphanRemoval=true)
+	@Setter(value=AccessLevel.NONE)
+	private List<Order> orders;
 }
