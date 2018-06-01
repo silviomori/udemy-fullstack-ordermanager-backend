@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +30,7 @@ public class State {
 	private Integer id;
 	private String name;
 	
+	@JsonManagedReference
 	@OneToMany(mappedBy="state")
 	@Setter(value=AccessLevel.PRIVATE)
 	@Builder.Default
