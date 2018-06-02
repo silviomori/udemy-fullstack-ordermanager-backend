@@ -7,7 +7,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import br.com.technomori.ordermanager.domain.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public abstract class Payment {
 	//TODO save ID to database
 	private PaymentStatus paymentStatus;
 
-	@JsonBackReference
+	@JsonIgnore
 	@OneToOne
 	@MapsId
 	private Order order;

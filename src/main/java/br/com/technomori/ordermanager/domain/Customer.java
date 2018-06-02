@@ -11,8 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import br.com.technomori.ordermanager.domain.enums.ClientType;
 import lombok.AccessLevel;
@@ -40,18 +39,16 @@ public class Customer {
 	//TODO save ID to database
 	private ClientType clientType;
 	
-	@JsonManagedReference
 	@ElementCollection
 	@CollectionTable(name="PHONE")
 	@Singular
 	private Set<String> phones;
 	
-	@JsonManagedReference
 	@OneToMany(mappedBy="customer", orphanRemoval=true)
 	@Setter(value=AccessLevel.NONE)
 	private List<Address> addresses;
 	
-	@JsonBackReference
+	@JsonIgnore
 	@OneToMany(mappedBy="customer", orphanRemoval=true)
 	@Setter(value=AccessLevel.NONE)
 	private List<Order> orders;

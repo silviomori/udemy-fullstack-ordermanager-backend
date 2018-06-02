@@ -8,7 +8,6 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -50,7 +49,6 @@ class OrderItemPK implements Serializable {
 	@ManyToOne
 	private Order order;
 	
-	@JsonManagedReference
 	@ManyToOne
 	private Product product;		
 }

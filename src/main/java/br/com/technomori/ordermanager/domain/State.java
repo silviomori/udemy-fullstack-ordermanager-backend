@@ -9,7 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public class State {
 	private Integer id;
 	private String name;
 	
-	@JsonBackReference
+	@JsonIgnore
 	@OneToMany(mappedBy="state")
 	@Setter(value=AccessLevel.PRIVATE)
 	@Builder.Default

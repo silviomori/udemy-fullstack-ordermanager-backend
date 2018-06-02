@@ -9,7 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AccessLevel;
@@ -33,7 +32,7 @@ public class Product {
 	private String name;
 	private Double price;
 	
-	@JsonBackReference
+	@JsonIgnore
 	@ManyToMany
 	@Singular
 	private List<Category> categories;

@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -33,7 +33,7 @@ public class Address {
 	@ManyToOne
 	private City city;
 
-	@JsonBackReference
+	@JsonIgnore
 	@ManyToOne
 	private Customer customer;
 }
