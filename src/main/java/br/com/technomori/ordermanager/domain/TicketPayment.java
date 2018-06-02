@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.Entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +22,10 @@ import lombok.Setter;
 //@DiscriminatorValue("TICKET")
 public class TicketPayment extends Payment {
 	
+	@JsonFormat(pattern="yyyy/MM/dd")
 	private Date expirationDate;
+
+	@JsonFormat(pattern="yyyy/MM/dd")
 	private Date paymentDate;
 
 }

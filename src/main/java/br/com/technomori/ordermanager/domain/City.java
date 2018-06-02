@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,7 +26,7 @@ public class City {
 	private Integer id;
 	private String name;
 	
-	@JsonBackReference
+	@JsonManagedReference
 	@ManyToOne
 	private State state;
 }

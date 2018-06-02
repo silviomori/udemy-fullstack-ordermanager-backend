@@ -10,6 +10,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,7 @@ public class Product {
 	@Singular
 	private List<Category> categories;
 	
+	@JsonIgnore
 	@OneToMany(mappedBy="pk.product")
 	@Setter(value=AccessLevel.NONE)
 	private List<OrderItem> orderItems;

@@ -7,6 +7,9 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,8 +46,11 @@ public class OrderItem {
 class OrderItemPK implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
+	@JsonIgnore
 	@ManyToOne
 	private Order order;
+	
+	@JsonManagedReference
 	@ManyToOne
 	private Product product;		
 }

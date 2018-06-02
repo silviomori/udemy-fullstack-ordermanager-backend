@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import br.com.technomori.ordermanager.domain.enums.ClientType;
@@ -50,7 +51,7 @@ public class Customer {
 	@Setter(value=AccessLevel.NONE)
 	private List<Address> addresses;
 	
-	@JsonManagedReference
+	@JsonBackReference
 	@OneToMany(mappedBy="customer", orphanRemoval=true)
 	@Setter(value=AccessLevel.NONE)
 	private List<Order> orders;

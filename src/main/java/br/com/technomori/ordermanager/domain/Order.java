@@ -12,7 +12,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -32,15 +33,19 @@ public class Order {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
+
+	@JsonFormat(pattern="yyyy/MM/dd hh:mm a")
 	private Date instant;
 	
-	@JsonBackReference
+	@JsonManagedReference
 	@ManyToOne
 	private Customer customer;
 
+	@JsonManagedReference
 	@ManyToOne
 	private Address address;
 
+	@JsonManagedReference
 	@OneToOne(mappedBy="order")
 	@Setter(value=AccessLevel.NONE)
 	private Payment payment;
