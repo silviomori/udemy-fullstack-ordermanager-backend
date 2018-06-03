@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.assertj.core.api.Fail;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.HttpStatus;
@@ -47,9 +48,21 @@ public class CategoryTest {
 				"id","products");
 		
 		insertedCategories.add(responseCategory);
+		
+		log.info("Created category: "+responseCategory);
 	}
 	
-	@Test( dependsOnMethods = "creatingCategory", dataProvider = "categoryProvider" )
+	@Test( dependsOnMethods = "creatingCategory")
+	public void fetchAll() {
+		ResponseEntity<List> responseEntity = restCategory.getForEntity(BASE_PATH, List.class);	
+		assertThat(responseEntity).isNotNull();
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(responseEntity.getBody()).hasAtLeastOneElementOfType(Object.class);
+		
+		log.info("Reading all categories in database: "+responseEntity.getBody());
+	}
+
+	@Test( dependsOnMethods = "fetchAll", dataProvider = "categoryProvider" )
 	public void updatingCategory(Category category) {
 		category.setName("[U] "+category.getName());
 		URI uri = URI.create(BASE_PATH+"/"+category.getId());
@@ -58,30 +71,53 @@ public class CategoryTest {
 		Category updatedCategory = fetchCategory(uri);
 		assertThat(updatedCategory).isEqualToIgnoringGivenFields(category,
 				"products");
+
+		log.info("Updated category: "+updatedCategory);
 	}
 
-	@Test( dependsOnMethods = "updatingCategory", dataProvider = "categoryProvider" )
+	/*
+	 * Invoking this method twice:
+	 * 	- first:	to delete categories created in database
+	 *  - second:	to try to delete categories that are no longer in database
+	 */
+	@Test( dependsOnMethods = "updatingCategory", dataProvider = "categoryProvider", invocationCount=2 )
 	public void deletingCategory(Category category) {
 		URI uri = URI.create(BASE_PATH+"/"+category.getId());
-		restCategory.delete(uri);
 		
-		try {
-			restCategory.getForEntity(uri, Category.class);
-		} catch(HttpClientErrorException ex) {
+		try { // try to delete the category from database
+			restCategory.delete(uri);
+		} catch(HttpClientErrorException ex) { // Category was not found to be deleted
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+			log.info("Deleting category: Category is no longer in database: "+category);
+			return;
 		}
+
+		try { // try to find the deleted category in database
+			restCategory.getForEntity(uri, Category.class);
+		} catch(HttpClientErrorException ex) { // Category has just been deleted
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+			log.info("Deleted category: "+category);
+			return;
+		}
+		
+		Fail.fail("Deletion has not worked properly.");
+
 	}
 
-	@Test
+	@Test( dependsOnMethods = "deletingCategory" )
 	public void deletingNotAllowed() {
-		URI uri = URI.create(BASE_PATH+"/1");
-		try {
+		int categoryId = 1;
+		URI uri = URI.create(BASE_PATH+"/"+categoryId);
+		try { // try to delete the category from database
 			restCategory.delete(uri);
-		} catch(HttpClientErrorException ex) {
+		} catch(HttpClientErrorException ex) { // Deletion has not been allowed
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 		}
-	}
 
+		Category categoryRemainsInDatabase = fetchCategory(categoryId);
+		log.info("Deleting category: Not allowed to delete category: "+categoryRemainsInDatabase);
+	}
+	
 	private Category fetchCategory(Integer categoryId) {
 		URI uri = URI.create(BASE_PATH+"/"+categoryId);
 		return fetchCategory(uri);

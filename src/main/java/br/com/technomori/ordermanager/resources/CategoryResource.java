@@ -1,6 +1,7 @@
 package br.com.technomori.ordermanager.resources;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.com.technomori.ordermanager.domain.Category;
+import br.com.technomori.ordermanager.dto.CategoryDTO;
 import br.com.technomori.ordermanager.services.CategoryService;
 
 @RestController
@@ -25,6 +27,12 @@ public class CategoryResource {
 	public ResponseEntity<Category> fetch(@PathVariable Integer id) {
 		Category category = service.fetch(id);
 		return ResponseEntity.ok().body(category);
+	}
+
+	@RequestMapping(method=RequestMethod.GET)
+	public ResponseEntity<List<CategoryDTO>> fetchAll() {
+		List<CategoryDTO> list = service.fetchAll();
+		return ResponseEntity.ok().body(list);
 	}
 
 	@RequestMapping(method=RequestMethod.POST)

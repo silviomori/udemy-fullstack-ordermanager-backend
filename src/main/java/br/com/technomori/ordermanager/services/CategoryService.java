@@ -1,12 +1,15 @@
 package br.com.technomori.ordermanager.services;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import br.com.technomori.ordermanager.domain.Category;
+import br.com.technomori.ordermanager.dto.CategoryDTO;
 import br.com.technomori.ordermanager.repositories.CategoryRepository;
 import br.com.technomori.ordermanager.services.exceptions.DataIntegrityException;
 import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundException;
@@ -25,6 +28,14 @@ public class CategoryService {
 			() -> new ObjectNotFoundException("Object not found: TYPE: "+Category.class.getName()+", ID: "+id)
 		);
 
+	}
+	
+	public List<CategoryDTO> fetchAll() {
+		List<Category> categoryList = repository.findAll();
+		List<CategoryDTO> categoryDTOList = categoryList.stream()
+				.map(category -> new CategoryDTO(category))
+				.collect(Collectors.toList());
+		return categoryDTOList;
 	}
 
 	public Category insert(Category category) {
@@ -46,4 +57,5 @@ public class CategoryService {
 			throw new DataIntegrityException("It is not allowed to delete a Category containing Products.");
 		}
 	}
+
 }
