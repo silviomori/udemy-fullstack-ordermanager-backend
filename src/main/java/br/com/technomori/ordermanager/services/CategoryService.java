@@ -30,4 +30,9 @@ public class CategoryService {
 		category.setId(null);
 		return repository.save(category);
 	}
+	
+	public void update(Category category) {
+		fetch(category.getId()); // Throws an exception if category is not found
+		repository.save(category);
+	}
 }
