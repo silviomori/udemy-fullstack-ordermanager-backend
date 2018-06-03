@@ -4,12 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.assertj.core.api.Fail;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
@@ -19,6 +23,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import br.com.technomori.ordermanager.domain.Category;
+import br.com.technomori.ordermanager.dto.CategoryDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @Test
@@ -116,6 +121,40 @@ public class CategoryTest {
 
 		Category categoryRemainsInDatabase = fetchCategory(categoryId);
 		log.info("Deleting category: Not allowed to delete category: "+categoryRemainsInDatabase);
+	}
+	
+	@Test( dependsOnMethods = "deletingNotAllowed" )
+	public void pagingResults() {
+		// adding a lot of categories to perform the paging test
+		List<URI> addedCategoryUriList = new ArrayList();
+		for(int i = 1; i < 51; ++i) {
+			URI responseUri = restCategory.postForLocation(
+					BASE_PATH,
+					Category.builder().name("test"+i).build());
+			addedCategoryUriList.add(responseUri);
+		}
+		
+		/*
+		 * For now, I am just testing one page.
+		 * TODO: Make a test to all pages
+		 * TODO: Make tests to all RequestParam
+		 */
+		//do {
+			ResponseEntity<PagedResources<CategoryDTO>> responseEntity =
+					restCategory.exchange(BASE_PATH+"/paging",
+	                HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<CategoryDTO>>() {});
+			
+			assertThat(responseEntity).isNotNull();
+			assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+			
+			Collection<CategoryDTO> collectionDTO = responseEntity.getBody().getContent();
+			log.info("Paging categories in database: "+collectionDTO);
+		//} while( ** has more pages ** );
+
+		// deleting the categories added to perform this test
+		for (URI uri : addedCategoryUriList) {
+			restCategory.delete(uri);
+		}
 	}
 	
 	private Category fetchCategory(Integer categoryId) {

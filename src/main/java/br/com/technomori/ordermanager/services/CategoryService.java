@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import br.com.technomori.ordermanager.domain.Category;
@@ -36,6 +39,17 @@ public class CategoryService {
 				.map(category -> new CategoryDTO(category))
 				.collect(Collectors.toList());
 		return categoryDTOList;
+	}
+
+	/*
+	 * Direction can be: "ASC" or "DESC"
+	 */
+	public Page<CategoryDTO> pagingAll(Integer pageNumber, Integer linesPerPage, String direction, String ... orderBy) {
+		PageRequest pageRequest = PageRequest.of(pageNumber, linesPerPage, Direction.valueOf(direction), orderBy);
+		Page<Category> categoryPage = repository.findAll(pageRequest);
+		Page<CategoryDTO> categoryDTOPage = categoryPage
+				.map(category -> new CategoryDTO(category));
+		return categoryDTOPage;
 	}
 
 	public Category insert(Category category) {
