@@ -3,10 +3,12 @@ package br.com.technomori.ordermanager.services;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import br.com.technomori.ordermanager.domain.Category;
 import br.com.technomori.ordermanager.repositories.CategoryRepository;
+import br.com.technomori.ordermanager.services.exceptions.DataIntegrityException;
 import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundException;
 
 @Service
@@ -34,5 +36,14 @@ public class CategoryService {
 	public void update(Category category) {
 		fetch(category.getId()); // Throws an exception if category is not found
 		repository.save(category);
+	}
+
+	public void delete(Integer id) {
+		Category categoryToBeDeleted = fetch(id); // Throws an exception if category is not found
+		try {
+			repository.delete(categoryToBeDeleted);
+		} catch( DataIntegrityViolationException ex ) {
+			throw new DataIntegrityException("It is not allowed to delete a Category containing Products.");
+		}
 	}
 }

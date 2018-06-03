@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -59,6 +60,27 @@ public class CategoryTest {
 				"products");
 	}
 
+	@Test( dependsOnMethods = "updatingCategory", dataProvider = "categoryProvider" )
+	public void deletingCategory(Category category) {
+		URI uri = URI.create(BASE_PATH+"/"+category.getId());
+		restCategory.delete(uri);
+		
+		try {
+			restCategory.getForEntity(uri, Category.class);
+		} catch(HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@Test
+	public void deletingNotAllowed() {
+		URI uri = URI.create(BASE_PATH+"/1");
+		try {
+			restCategory.delete(uri);
+		} catch(HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+		}
+	}
 
 	private Category fetchCategory(Integer categoryId) {
 		URI uri = URI.create(BASE_PATH+"/"+categoryId);
