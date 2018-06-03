@@ -1,7 +1,7 @@
 package br.com.technomori.ordermanager.domain;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,8 +13,10 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -32,6 +34,8 @@ public class Category {
 	@ManyToMany(mappedBy="categories")
 	@Setter(value=lombok.AccessLevel.PRIVATE)
 	@Builder.Default
-	private Collection<Product> products = new ArrayList<Product>();
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	private List<Product> products = new ArrayList<Product>();
 
 }

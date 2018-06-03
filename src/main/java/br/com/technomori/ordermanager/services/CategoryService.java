@@ -24,4 +24,10 @@ public class CategoryService {
 		);
 
 	}
+
+	public Category insert(Category category) {
+		//Forcing to insert a new Category instead of updating
+		category.setId(null);
+		return repository.save(category);
+	}
 }
