@@ -3,6 +3,8 @@ package br.com.technomori.ordermanager.resources;
 import java.net.URI;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +50,9 @@ public class CategoryResource {
 	}
 
 	@RequestMapping(method=RequestMethod.POST)
-	public ResponseEntity<Void> insert(@RequestBody Category category) {
+	public ResponseEntity<Void> insert(@Valid @RequestBody CategoryDTO categoryDTO) {
+		// Constraints in a @Valid object must be accessed in this method, otherwise they will not be validated
+		Category category = service.getCategoryFromDTO(categoryDTO);
 		category = service.insert(category);
 		URI uriResponse = ServletUriComponentsBuilder.fromCurrentRequest()
 				.path("/{id}").buildAndExpand(category.getId())
@@ -57,7 +61,10 @@ public class CategoryResource {
 	}
 	
 	@RequestMapping(method=RequestMethod.PUT, value="/{id}")
-	public ResponseEntity<Void> update(@PathVariable Integer id, @RequestBody Category category) {
+	public ResponseEntity<Void> update(@PathVariable Integer id, @Valid @RequestBody CategoryDTO categoryDTO) {
+		// Constraints in a @Valid object must be accessed in this method, otherwise they will not be validated
+		Category category = service.getCategoryFromDTO(categoryDTO);
+		
 		category.setId(id);
 		service.update(category);
 		return ResponseEntity.noContent().build();

@@ -57,7 +57,7 @@ public class CategoryService {
 		category.setId(null);
 		return repository.save(category);
 	}
-	
+
 	public void update(Category category) {
 		fetch(category.getId()); // Throws an exception if category is not found
 		repository.save(category);
@@ -72,4 +72,8 @@ public class CategoryService {
 		}
 	}
 
+
+	public Category getCategoryFromDTO(CategoryDTO dto) {
+		return Category.builder().id(dto.getId()).name(dto.getName()).build();
+	}
 }

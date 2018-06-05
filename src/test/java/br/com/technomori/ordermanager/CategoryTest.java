@@ -44,13 +44,14 @@ public class CategoryTest {
 	
 	@Test( dataProvider = "categoryProvider" )
 	public void creatingCategory(Category category) {
-		URI responseUri = restCategory.postForLocation(BASE_PATH, category);
+		CategoryDTO dto = new CategoryDTO(category);
+		URI responseUri = restCategory.postForLocation(BASE_PATH, dto);
 		
 		assertThat(responseUri).isNotNull();
 
 		Category responseCategory = fetchCategory(responseUri);
-		assertThat(responseCategory).isEqualToIgnoringGivenFields(category, 
-				"id","products");
+		assertThat(responseCategory.getName()).isEqualTo(dto.getName()); 
+		
 		
 		insertedCategories.add(responseCategory);
 		
@@ -69,13 +70,14 @@ public class CategoryTest {
 
 	@Test( dependsOnMethods = "fetchAll", dataProvider = "categoryProvider" )
 	public void updatingCategory(Category category) {
-		category.setName("[U] "+category.getName());
-		URI uri = URI.create(BASE_PATH+"/"+category.getId());
-		restCategory.put(uri, category);
+		CategoryDTO dto = new CategoryDTO(category);
+		dto.setName("[U] "+dto.getName());
+		URI uri = URI.create(BASE_PATH+"/"+dto.getId());
+		restCategory.put(uri, dto);
 		
 		Category updatedCategory = fetchCategory(uri);
-		assertThat(updatedCategory).isEqualToIgnoringGivenFields(category,
-				"products");
+		assertThat(updatedCategory.getId()).isEqualTo(dto.getId());
+		assertThat(updatedCategory.getName()).isEqualTo(dto.getName());
 
 		log.info("Updated category: "+updatedCategory);
 	}
@@ -157,6 +159,98 @@ public class CategoryTest {
 		}
 	}
 	
+	@Test
+	public void validatingNameOnInsert() {
+		Category category = new Category();
+		try {
+			creatingCategory(category); // must throw an exception
+			
+			Fail.fail("Category with an empty name should not be inserted in database.");
+		} catch( HttpClientErrorException ex ) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+		}
+		
+		category.setName("a");
+		try {
+			creatingCategory(category); // must throw an exception
+			
+			Fail.fail("Category with a short name should not be inserted in database.");
+		} catch( HttpClientErrorException ex ) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+		}
+		
+		category.setName(
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890");
+		try {
+			creatingCategory(category); // must throw an exception
+
+			Fail.fail("Category with a too long name should not be inserted in database.");
+		} catch( HttpClientErrorException ex ) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+		}		
+	}
+
+	@Test
+	public void validatingNameOnUpdate() {
+		CategoryDTO categoryDTO = CategoryDTO.builder().id(1).name("").build();
+		try {
+			//Method updatingCategory can not be invoked here because it modifies the category name
+			URI uri = URI.create(BASE_PATH+"/"+categoryDTO.getId()); // must throw an exception
+			restCategory.put(uri, categoryDTO);
+
+			Fail.fail("Category should not be updated with an empty name.");
+		} catch( HttpClientErrorException ex ) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+		}
+		
+		categoryDTO.setName("a");
+		try {
+			//Method updatingCategory can not be invoked here because it modifies the category name
+			URI uri = URI.create(BASE_PATH+"/"+categoryDTO.getId()); // must throw an exception
+			restCategory.put(uri, categoryDTO);
+			
+			Fail.fail("Category should not be updated with a short name.");
+		} catch( HttpClientErrorException ex ) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+		}
+		
+		categoryDTO.setName(
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890"+
+				"1234567890");
+		try {
+			//Method updatingCategory can not be invoked here because it modifies the category name
+			URI uri = URI.create(BASE_PATH+"/"+categoryDTO.getId()); // must throw an exception
+			restCategory.put(uri, categoryDTO);
+			
+			Fail.fail("Category should not be updated with a too long name.");
+		} catch( HttpClientErrorException ex ) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+		}		
+	}
+
 	private Category fetchCategory(Integer categoryId) {
 		URI uri = URI.create(BASE_PATH+"/"+categoryId);
 		return fetchCategory(uri);
@@ -183,4 +277,5 @@ public class CategoryTest {
 				Category.builder().name("Furniture").build()
 			};
 	}
+	
 }
