@@ -299,6 +299,23 @@ public class CustomerTest {
 	}
 
 	@Test
+	public void validatingEmailUniquenessInDatabase() {
+		InsertCustomerDTO dto = getGenericCustomerToInsert(1000);
+		
+		// Customer must be created successfully
+		creatingCustomer(dto);
+		
+		try {
+			creatingCustomer(dto); // must throw an exception
+
+			Fail.fail("Customer with non unique email address should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+		}
+	}
+
+	@Test
 	public void validatingEmailOnUpdate() {
 		CustomerDTO customerDTO = CustomerDTO.builder().id(1).name("Aaaaaaaaaa Bbbbbbbbb").email("").build();
 		try {
