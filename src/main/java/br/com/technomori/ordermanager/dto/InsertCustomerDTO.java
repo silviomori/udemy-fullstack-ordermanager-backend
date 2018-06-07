@@ -2,6 +2,7 @@ package br.com.technomori.ordermanager.dto;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Length;
 
 import br.com.technomori.ordermanager.domain.enums.CustomerType;
+import br.com.technomori.ordermanager.services.validation.CustomerInsert;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +22,7 @@ import lombok.Singular;
 @NoArgsConstructor
 @AllArgsConstructor(access=AccessLevel.PRIVATE)
 @Builder
+@CustomerInsert
 public class InsertCustomerDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
@@ -29,6 +32,7 @@ public class InsertCustomerDTO implements Serializable {
 	@NotEmpty(message="Required field.")
 	@Email(message="Invalid email address.")
 	private String email;
+	@NotEmpty(message="Required field.")
 	private String documentNumber;
 	private CustomerType customerType;
 
@@ -38,14 +42,6 @@ public class InsertCustomerDTO implements Serializable {
 	
 	@NotEmpty
 	@Singular
-	private List<String> phoneNumbers;
+	private Set<String> phoneNumbers;
 	
-	
-	
-//	public InsertCustomerDTO(Customer customer) {
-//		id = customer.getId();
-//		name = customer.getName();
-//		email = customer.getEmail();
-//	}
-
 }

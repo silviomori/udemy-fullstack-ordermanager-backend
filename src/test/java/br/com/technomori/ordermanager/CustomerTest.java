@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -45,6 +46,7 @@ public class CustomerTest {
 		restCustomer = new RestTemplate();
 	}
 
+	// TODO: Make a test with a Customer Type null
 	@Test(dataProvider = "insertCustomerProvider")
 	public void creatingCustomer(InsertCustomerDTO dto) {
 
@@ -171,32 +173,11 @@ public class CustomerTest {
 		 }
 	}
 	
-	private InsertCustomerDTO getGenericCustomerToInsert(int pin) {
-		InsertAddressDTO address = InsertAddressDTO.builder()
-				.street("5th Avenue"+pin)
-				.number("5009"+pin)
-				.complement("ap 92"+pin)
-				.district("Alphaville"+pin)
-				.zipCode("11223-001"+pin)
-				.cityId(1)
-				.build();
-
-		InsertCustomerDTO customer = InsertCustomerDTO.builder()
-				.name("Silvio Mori Neto"+pin)
-				.email("silviomori@gmail.com"+pin)
-				.documentNumber("111.222.333-44"+pin)
-				.customerType(CustomerType.INDIVIDUAL)
-				.address(address)
-				.phoneNumber("11-99890-9988"+pin)
-				.phoneNumber("11-99890-9989"+pin)
-				.build();
-
-		return customer;
-	}
-
 	@Test
 	public void validatingNameOnInsert() {
-		InsertCustomerDTO dto = InsertCustomerDTO.builder().name("").email("email@email.com").build();
+		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		dto.setName("");
+		
 		try {
 			creatingCustomer(dto); // must throw an exception
 
@@ -294,7 +275,9 @@ public class CustomerTest {
 
 	@Test
 	public void validatingEmailOnInsert() {
-		InsertCustomerDTO dto = InsertCustomerDTO.builder().name("Aaaaaaaaaa Bbbbbbbbb").email("").build();
+		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		dto.setEmail("");
+
 		try {
 			creatingCustomer(dto); // must throw an exception
 
@@ -340,8 +323,133 @@ public class CustomerTest {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
+	}
+
+	@Test
+	public void validatingCPFOnInsert() {
+		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		dto.setCustomerType(CustomerType.INDIVIDUAL);
+		dto.setDocumentNumber("112233");
+
+		try {
+			creatingCustomer(dto); // must throw an exception
+
+			Fail.fail("Customer with no valid CPF should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
+	}
+
+	@Test
+	public void validatingCNPJOnInsert() {
+		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		dto.setCustomerType(CustomerType.CORPORATE);
+		dto.setDocumentNumber("112233");
+
+		try {
+			creatingCustomer(dto); // must throw an exception
+
+			Fail.fail("Customer with no valid CNPJ should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
+	}
+
+	@Test
+	public void validatingAddressOnInsert() {
+		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		dto.setAddresses(new ArrayList());
+		try {
+			creatingCustomer(dto); // must throw an exception
+			Fail.fail("Customer with empty address list should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
+		
+		dto = getGenericCustomerToInsert(1);
+		dto.getAddresses().get(0).setStreet("");
+		try {
+			creatingCustomer(dto); // must throw an exception
+			Fail.fail("Address with empty street name should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
+
+		dto = getGenericCustomerToInsert(1);
+		dto.getAddresses().get(0).setNumber("");
+		try {
+			creatingCustomer(dto); // must throw an exception
+			Fail.fail("Address with no number should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
+
+		dto = getGenericCustomerToInsert(1);
+		dto.getAddresses().get(0).setZipCode("");
+		try {
+			creatingCustomer(dto); // must throw an exception
+			Fail.fail("Customer with empty zip code should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
+
+		dto = getGenericCustomerToInsert(1);
+		dto.getAddresses().get(0).setCityId(null);
+		try {
+			creatingCustomer(dto); // must throw an exception
+			Fail.fail("Customer with no city id defined should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
 
 	}
+
+	@Test
+	public void validatingPhoneNotNullOnInsert() {
+		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		dto.setPhoneNumbers(new HashSet());
+
+		try {
+			creatingCustomer(dto); // must throw an exception
+
+			Fail.fail("Customer with empty phone set should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
+	}
+
+	@Test
+	public void validatingCustomerTypeNotNullOnInsert() {
+		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		dto.setCustomerType(null);
+
+		try {
+			creatingCustomer(dto); // must throw an exception
+
+			Fail.fail("Customer with empty customer type should not be inserted in database.");
+		} catch (HttpClientErrorException ex) {
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info(ex.getMessage());
+			return;
+		}
+	}
+
 
 	private Customer fetchCustomer(Integer customerId) {
 		URI uri = URI.create(BASE_PATH+"/"+customerId);
@@ -357,6 +465,29 @@ public class CustomerTest {
 		assertThat(responseCustomer).isNotNull();
 
 		return responseCustomer;
+	}
+	
+	private InsertCustomerDTO getGenericCustomerToInsert(int pin) {
+		InsertAddressDTO address = InsertAddressDTO.builder()
+				.street("5th Avenue"+pin)
+				.number("5009"+pin)
+				.complement("ap 92"+pin)
+				.district("Alphaville"+pin)
+				.zipCode("11223-001"+pin)
+				.cityId(1)
+				.build();
+
+		InsertCustomerDTO customer = InsertCustomerDTO.builder()
+				.name("Silvio Mori Neto"+pin)
+				.email("silviomori@gmail.com"+pin)
+				.documentNumber("11122233344")
+				.customerType(CustomerType.INDIVIDUAL)
+				.address(address)
+				.phoneNumber("11-99890-9988"+pin)
+				.phoneNumber("11-99890-9989"+pin)
+				.build();
+
+		return customer;
 	}
 
 	@DataProvider
@@ -378,7 +509,7 @@ public class CustomerTest {
 		InsertCustomerDTO customer = InsertCustomerDTO.builder()
 				.name("Silvio Mori Neto")
 				.email("silviomori@gmail.com")
-				.documentNumber("111.222.333-44")
+				.documentNumber("11122233344")
 				.customerType(CustomerType.INDIVIDUAL)
 				.address(address)
 				.phoneNumber("11-99890-9988")
