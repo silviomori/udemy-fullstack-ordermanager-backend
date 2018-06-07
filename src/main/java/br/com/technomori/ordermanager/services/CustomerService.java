@@ -10,9 +10,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import br.com.technomori.ordermanager.domain.Address;
+import br.com.technomori.ordermanager.domain.City;
 import br.com.technomori.ordermanager.domain.Customer;
 import br.com.technomori.ordermanager.dto.CustomerDTO;
+import br.com.technomori.ordermanager.dto.InsertAddressDTO;
+import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
 import br.com.technomori.ordermanager.repositories.CustomerRepository;
 import br.com.technomori.ordermanager.services.exceptions.DataIntegrityException;
 import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundException;
@@ -52,11 +57,11 @@ public class CustomerService {
 		return customerDTOPage;
 	}
 
+	@Transactional
 	public Customer insert(Customer customer) {
-		throw new RuntimeException("Method not implemented yet: CustomerService.insert(Customer)");
-//		//Forcing to insert a new Customer instead of updating
-//		customer.setId(null);
-//		return repository.save(customer);
+		//Forcing to insert a new Customer instead of updating
+		customer.setId(null);
+		return repository.save(customer);
 	}
 
 	public void update(Customer customer) {
@@ -87,6 +92,33 @@ public class CustomerService {
 				.name(dto.getName())
 				.email(dto.getEmail())
 				.build();
+	}
+
+
+	public Customer getCustomerFromInsertDTO(InsertCustomerDTO dto) {
+		Customer customer = Customer.builder()
+				.name(dto.getName())
+				.email(dto.getEmail())
+				.documentNumber(dto.getDocumentNumber())
+				.customerType(dto.getCustomerType())
+				.phones(dto.getPhoneNumbers())
+				.build();
+
+
+		for( InsertAddressDTO addressDTO : dto.getAddresses() ) {
+			Address address = Address.builder()
+					.customer(customer)
+					.street(addressDTO.getStreet())
+					.number(addressDTO.getNumber())
+					.complement(addressDTO.getComplement())
+					.district(addressDTO.getDistrict())
+					.zipCode(addressDTO.getZipCode())
+					.city(City.builder().id(addressDTO.getCityId()).build())
+					.build();
+			customer.getAddresses().add(address);
+		}
+		
+		return customer;
 	}
 
 }

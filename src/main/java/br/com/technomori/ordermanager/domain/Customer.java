@@ -1,8 +1,10 @@
 package br.com.technomori.ordermanager.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -13,7 +15,7 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import br.com.technomori.ordermanager.domain.enums.ClientType;
+import br.com.technomori.ordermanager.domain.enums.CustomerType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,19 +39,19 @@ public class Customer {
 	private String documentNumber;
 
 	//TODO save ID to database
-	private ClientType clientType;
+	private CustomerType customerType;
 	
 	@ElementCollection
 	@CollectionTable(name="PHONE")
 	@Singular
 	private Set<String> phones;
 	
-	@OneToMany(mappedBy="customer", orphanRemoval=true)
-	@Setter(value=AccessLevel.NONE)
-	private List<Address> addresses;
+	@OneToMany(mappedBy="customer", cascade=CascadeType.ALL)
+	@Builder.Default
+	private List<Address> addresses = new ArrayList<Address>();
 	
 	@JsonIgnore
-	@OneToMany(mappedBy="customer", orphanRemoval=true)
+	@OneToMany(mappedBy="customer")
 	@Setter(value=AccessLevel.NONE)
 	private List<Order> orders;
 }

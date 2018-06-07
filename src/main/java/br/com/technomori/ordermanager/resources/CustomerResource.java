@@ -18,6 +18,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.com.technomori.ordermanager.domain.Customer;
 import br.com.technomori.ordermanager.dto.CustomerDTO;
+import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
 import br.com.technomori.ordermanager.services.CustomerService;
 
 @RestController
@@ -51,12 +52,12 @@ public class CustomerResource {
 
 
 	@RequestMapping(method=RequestMethod.POST)
-	public ResponseEntity<Void> insert(@Valid @RequestBody CustomerDTO CustomerDTO) {
+	public ResponseEntity<Void> insert(@Valid @RequestBody InsertCustomerDTO insertDTO) {
 		// Constraints in a @Valid object must be accessed in this method, otherwise they will not be validated
-		Customer Customer = service.getCustomerFromDTO(CustomerDTO);
-		Customer = service.insert(Customer);
+		Customer customer = service.getCustomerFromInsertDTO(insertDTO);
+		customer = service.insert(customer);
 		URI uriResponse = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}").buildAndExpand(Customer.getId())
+				.path("/{id}").buildAndExpand(customer.getId())
 				.toUri();
 		return ResponseEntity.created(uriResponse).build();
 	}

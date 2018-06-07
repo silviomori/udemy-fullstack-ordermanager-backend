@@ -59,8 +59,14 @@ public class CategoryService {
 	}
 
 	public void update(Category category) {
-		fetch(category.getId()); // Throws an exception if category is not found
-		repository.save(category);
+		Category categoryToBeUpdated = fetch(category.getId()); // Throws an exception if customer is not found
+		categoryUpdateData(categoryToBeUpdated,category);
+		repository.save(categoryToBeUpdated);
+	}
+
+	private void categoryUpdateData(Category categoryToBeUpdated, Category categoryWithNewData) {
+		// Only this information is allowed to be updated
+		categoryToBeUpdated.setName(categoryWithNewData.getName());
 	}
 
 	public void delete(Integer id) {

@@ -23,7 +23,10 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import br.com.technomori.ordermanager.domain.Customer;
+import br.com.technomori.ordermanager.domain.enums.CustomerType;
 import br.com.technomori.ordermanager.dto.CustomerDTO;
+import br.com.technomori.ordermanager.dto.InsertAddressDTO;
+import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @Test
@@ -34,165 +37,186 @@ public class CustomerTest {
 	private final String BASE_PATH = "http://localhost:8080/customers";
 
 	private RestTemplate restCustomer;
-	
+
 	private List<Customer> insertedCustomers = new ArrayList<Customer>();
-	
+
 	@BeforeClass
 	public void beforeClass() {
 		restCustomer = new RestTemplate();
 	}
 
-	// Method to insert a new customer not implemented yet
-	@Test( dataProvider = "customerProvider", enabled = false)
-	public void creatingCustomer(Customer customer) {
-		CustomerDTO dto = new CustomerDTO(customer);
+	@Test(dataProvider = "insertCustomerProvider")
+	public void creatingCustomer(InsertCustomerDTO dto) {
 
 		URI responseUri = restCustomer.postForLocation(BASE_PATH, dto);
-		
+
 		assertThat(responseUri).isNotNull();
 
 		Customer responseCustomer = fetchCustomer(responseUri);
-		assertThat(responseCustomer.getName()).isEqualTo(dto.getName()); 
-		
-		insertedCustomers.add(responseCustomer);
-		
-		log.info("Created customer: "+responseCustomer);
-	}
-	
-	// Method to insert a new customer not implemented yet
-	@Test//( dependsOnMethods = "creatingCustomer" )
-	public void fetchAll() {
-		ResponseEntity<List> responseEntity = restCustomer.getForEntity(BASE_PATH, List.class);	
-		assertThat(responseEntity).isNotNull();
-		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		assertThat(responseEntity.getBody()).hasAtLeastOneElementOfType(Object.class);
-		
-		log.info("Reading all customers in database: "+responseEntity.getBody());
+
+		assertThat(responseCustomer).isNotNull();
+		assertThat(responseCustomer.getCustomerType()).isEqualTo(dto.getCustomerType());
+		assertThat(responseCustomer.getDocumentNumber()).isEqualTo(dto.getDocumentNumber());
+		assertThat(responseCustomer.getEmail()).isEqualTo(dto.getEmail());
+		assertThat(responseCustomer.getName()).isEqualTo(dto.getName());
+		assertThat(responseCustomer.getPhones().size()).isEqualTo(dto.getPhoneNumbers().size());
+		assertThat(responseCustomer.getAddresses().size()).isEqualTo(dto.getAddresses().size());
+
+		assertThat(insertedCustomers.add(responseCustomer)).isTrue();
+
+		log.info("Created customer: " + responseCustomer);
 	}
 
-	@Test( dependsOnMethods = "fetchAll", dataProvider = "customerProvider" )
+	@Test(dependsOnMethods = "creatingCustomer")
+	public void fetchAll() {
+		ResponseEntity<List> responseEntity = restCustomer.getForEntity(BASE_PATH, List.class);
+		assertThat(responseEntity).isNotNull();
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(responseEntity.getBody().size()).isGreaterThanOrEqualTo(insertedCustomers.size());
+
+		log.info("Reading all customers in database: " + responseEntity.getBody());
+	}
+
+	@Test(dependsOnMethods = "fetchAll", dataProvider = "customerProvider")
 	public void updatingCustomer(Customer customer) {
-		// TODO: remove this instruction after the implementation of the method to insert a new Customer
-		customer.setId(1);
-		URI uri = URI.create(BASE_PATH+"/"+customer.getId());
+		URI uri = URI.create(BASE_PATH + "/" + customer.getId());
 		customer = fetchCustomer(uri);
-		customer.setName("[U] "+customer.getName());
-		customer.setEmail("u"+customer.getEmail());
+		customer.setName("[U] " + customer.getName());
+		customer.setEmail("u" + customer.getEmail());
 
 		CustomerDTO dto = new CustomerDTO(customer);
 		restCustomer.put(uri, dto);
 
 		Customer updatedCustomer = fetchCustomer(uri);
-		assertThat(updatedCustomer).isEqualToComparingOnlyGivenFields(customer,
-				"id","name","email","documentNumber","clientType");
+		assertThat(updatedCustomer).isEqualToComparingOnlyGivenFields(customer, "id", "name", "email",
+				"documentNumber");
 
-		log.info("Updated customer: "+updatedCustomer);
+		log.info("Updated customer: " + updatedCustomer);
 	}
 
 	/*
-	 * Invoking this method twice:
-	 * 	- first:	to delete customers created in database
-	 *  - second:	to try to delete customers that are no longer in database
+	 * Invoking this method twice: - first: to delete customers created in database
+	 * - second: to try to delete customers that are no longer in database
 	 */
-	// Method to insert a new customer with no orders not implemented yet
-	// For now, this method can't be invoked
-	@Test( dependsOnMethods = "updatingCustomer", dataProvider = "customerProvider", invocationCount=2 )
+	@Test(dependsOnMethods = "updatingCustomer", groups="deletingCustomer", dataProvider = "customerProvider", invocationCount = 2)
 	public void deletingCustomer(Customer customer) {
-//		URI uri = URI.create(BASE_PATH+"/"+customer.getId());
-//		
-//		try { // try to delete the customer from database
-//			restCustomer.delete(uri);
-//		} catch(HttpClientErrorException ex) { // Customer was not found to be deleted
-//			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-//			log.info("Deleting customer: Customer is no longer in database: "+customer);
-//			return;
-//		}
-//
-//		try { // try to find the deleted customer in database
-//			restCustomer.getForEntity(uri, Customer.class);
-//		} catch(HttpClientErrorException ex) { // Customer has just been deleted
-//			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-//			log.info("Deleted customer: "+customer);
-//			return;
-//		}
-//		
-//		Fail.fail("Deletion has not worked properly.");
-	}
+		URI uri = URI.create(BASE_PATH + "/" + customer.getId());
 
-	@Test( dependsOnMethods = "deletingCustomer" )
-	public void deletingNotAllowed() {
-		int customerId = 1;
-		URI uri = URI.create(BASE_PATH+"/"+customerId);
 		try { // try to delete the customer from database
 			restCustomer.delete(uri);
-		} catch(HttpClientErrorException ex) { // Deletion has not been allowed
+		} catch (HttpClientErrorException ex) { // Customer was not found to be deleted
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+			log.info("Deleting customer: Customer is no longer in database: " + customer);
+			return;
+		}
+
+		try { // try to find the deleted customer in database
+			restCustomer.getForEntity(uri, Customer.class);
+		} catch (HttpClientErrorException ex) { // Customer has just been deleted
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+			log.info("Deleted customer: " + customer);
+			insertedCustomers.remove(customer);
+			return;
+		}
+
+		Fail.fail("Deletion has not worked properly.");
+	}
+
+	
+	@Test(dependsOnMethods = "deletingCustomer")
+	public void deletingNotAllowed() {
+		int customerId = 1;
+		URI uri = URI.create(BASE_PATH + "/" + customerId);
+		try { // try to delete the customer from database
+			restCustomer.delete(uri);
+		} catch (HttpClientErrorException ex) { // Deletion has not been allowed
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 		}
 
 		Customer customerRemainsInDatabase = fetchCustomer(customerId);
-		log.info("Deleting customer: Not allowed to delete customer: "+customerRemainsInDatabase);
+		log.info("Deleting customer: Not allowed to delete customer: " + customerRemainsInDatabase);
 	}
 
-
-	@Test( dependsOnMethods = "deletingNotAllowed" )
+	@Test(dependsOnMethods = "deletingNotAllowed")
 	public void pagingResults() {
-// Method to insert a new customer not implemented yet
-//		// adding a lot of customers to perform the paging test
-//		List<URI> addedCustomerUriList = new ArrayList();
-//		for(int i = 1; i < 51; ++i) {
-//			URI responseUri = restCustomer.postForLocation(
-//					BASE_PATH,
-//					Customer.builder().name("test"+i).build());
-//			addedCustomerUriList.add(responseUri);
-//		}
-		
+		 // adding a lot of customers to perform the paging test
+		 List<URI> addedCustomerUriList = new ArrayList();
+		 for(int i = 1; i < 51; ++i) {
+			 URI responseUri = restCustomer.postForLocation(
+				 BASE_PATH,
+				 getGenericCustomerToInsert(i));
+			 addedCustomerUriList.add(responseUri);
+		 }
+
 		/*
 		 * For now, I am just testing one page.
 		 * TODO: Make a test to all pages
 		 * TODO: Make tests to all RequestParam
 		 */
 		//do {
-			ResponseEntity<PagedResources<CustomerDTO>> responseEntity =
-					restCustomer.exchange(BASE_PATH+"/paging",
-	                HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<CustomerDTO>>() {});
-			
+			ResponseEntity<PagedResources<CustomerDTO>> responseEntity = restCustomer.exchange(BASE_PATH + "/paging",
+					HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<CustomerDTO>>() {
+					});
+	
 			assertThat(responseEntity).isNotNull();
 			assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-			
+	
 			Collection<CustomerDTO> collectionDTO = responseEntity.getBody().getContent();
-			log.info("Paging customers in database: "+collectionDTO);
+			log.info("Paging customers in database: " + collectionDTO);
 		//} while( ** has more pages ** );
 
-// Not necessary yet, because nothing was added
-//		// deleting the customers added to perform this test
-//		for (URI uri : addedCustomerUriList) {
-//			restCustomer.delete(uri);
-//		}
+		 // deleting the customers added to perform this test
+		 for (URI uri : addedCustomerUriList) {
+			 restCustomer.delete(uri);
+		 }
 	}
 	
+	private InsertCustomerDTO getGenericCustomerToInsert(int pin) {
+		InsertAddressDTO address = InsertAddressDTO.builder()
+				.street("5th Avenue"+pin)
+				.number("5009"+pin)
+				.complement("ap 92"+pin)
+				.district("Alphaville"+pin)
+				.zipCode("11223-001"+pin)
+				.cityId(1)
+				.build();
+
+		InsertCustomerDTO customer = InsertCustomerDTO.builder()
+				.name("Silvio Mori Neto"+pin)
+				.email("silviomori@gmail.com"+pin)
+				.documentNumber("111.222.333-44"+pin)
+				.customerType(CustomerType.INDIVIDUAL)
+				.address(address)
+				.phoneNumber("11-99890-9988"+pin)
+				.phoneNumber("11-99890-9989"+pin)
+				.build();
+
+		return customer;
+	}
+
 	@Test
 	public void validatingNameOnInsert() {
-		Customer customer = Customer.builder().name("").email("email@email.com").build();
+		InsertCustomerDTO dto = InsertCustomerDTO.builder().name("").email("email@email.com").build();
 		try {
-			creatingCustomer(customer); // must throw an exception
-			
+			creatingCustomer(dto); // must throw an exception
+
 			Fail.fail("Customer with an empty name should not be inserted in database.");
-		} catch( HttpClientErrorException ex ) {
+		} catch (HttpClientErrorException ex) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
-		
-		customer.setName("a");
+
+		dto.setName("a");
 		try {
-			creatingCustomer(customer); // must throw an exception
-			
+			creatingCustomer(dto); // must throw an exception
+
 			Fail.fail("Customer with a short name should not be inserted in database.");
-		} catch( HttpClientErrorException ex ) {
+		} catch (HttpClientErrorException ex) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
-		
-		customer.setName(
+
+		dto.setName(
 				"1234567890"+
 				"1234567890"+
 				"1234567890"+
@@ -207,41 +231,41 @@ public class CustomerTest {
 				"1234567890"+
 				"1234567890");
 		try {
-			creatingCustomer(customer); // must throw an exception
+			creatingCustomer(dto); // must throw an exception
 
 			Fail.fail("Customer with a too long name should not be inserted in database.");
-		} catch( HttpClientErrorException ex ) {
+		} catch (HttpClientErrorException ex) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
-		}		
+		}
 	}
-	
+
 	@Test
 	public void validatingNameOnUpdate() {
 		CustomerDTO customerDTO = CustomerDTO.builder().id(1).name("").email("email@email.com").build();
 		try {
 			// Method updatingCustomer can not be invoked here because it modifies the customer name
-			URI uri = URI.create(BASE_PATH+"/"+customerDTO.getId()); // must throw an exception
+			URI uri = URI.create(BASE_PATH + "/" + customerDTO.getId()); // must throw an exception
 			restCustomer.put(uri, customerDTO);
 
 			Fail.fail("Customer should not be updated with an empty name.");
-		} catch( HttpClientErrorException ex ) {
+		} catch (HttpClientErrorException ex) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
-		
+
 		customerDTO.setName("a");
 		try {
 			// Method updatingCustomer can not be invoked here because it modifies the customer name
 			URI uri = URI.create(BASE_PATH+"/"+customerDTO.getId()); // must throw an exception
 			restCustomer.put(uri, customerDTO);
-			
+
 			Fail.fail("Customer should not be updated with a short name.");
-		} catch( HttpClientErrorException ex ) {
+		} catch ( HttpClientErrorException ex ) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
-		
+
 		customerDTO.setName(
 				"1234567890"+
 				"1234567890"+
@@ -260,32 +284,32 @@ public class CustomerTest {
 			// Method updatingCustomer can not be invoked here because it modifies the customer name
 			URI uri = URI.create(BASE_PATH+"/"+customerDTO.getId()); // must throw an exception
 			restCustomer.put(uri, customerDTO);
-			
+
 			Fail.fail("Customer should not be updated with a too long name.");
-		} catch( HttpClientErrorException ex ) {
+		} catch ( HttpClientErrorException ex ) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
-		}		
+		}
 	}
 
 	@Test
 	public void validatingEmailOnInsert() {
-		Customer customer = Customer.builder().name("Aaaaaaaaaa Bbbbbbbbb").email("").build();
+		InsertCustomerDTO dto = InsertCustomerDTO.builder().name("Aaaaaaaaaa Bbbbbbbbb").email("").build();
 		try {
-			creatingCustomer(customer); // must throw an exception
-			
+			creatingCustomer(dto); // must throw an exception
+
 			Fail.fail("Customer with an empty email address should not be inserted in database.");
-		} catch( HttpClientErrorException ex ) {
+		} catch (HttpClientErrorException ex) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
-		
-		customer.setEmail("a");
+
+		dto.setEmail("a");
 		try {
-			creatingCustomer(customer); // must throw an exception
-			
+			creatingCustomer(dto); // must throw an exception
+
 			Fail.fail("Customer with a invalid email address format should not be inserted in database.");
-		} catch( HttpClientErrorException ex ) {
+		} catch ( HttpClientErrorException ex ) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
@@ -300,19 +324,19 @@ public class CustomerTest {
 			restCustomer.put(uri, customerDTO);
 
 			Fail.fail("Customer with an empty email address should not be updated in database.");
-		} catch( HttpClientErrorException ex ) {
+		} catch ( HttpClientErrorException ex ) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
-		
+
 		customerDTO.setName("a");
 		try {
 			// Method updatingCustomer can not be invoked here because it modifies the customer name
 			URI uri = URI.create(BASE_PATH+"/"+customerDTO.getId()); // must throw an exception
 			restCustomer.put(uri, customerDTO);
-			
+
 			Fail.fail("Customer with a invalid email address format should not be updated in database.");
-		} catch( HttpClientErrorException ex ) {
+		} catch ( HttpClientErrorException ex ) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}
@@ -323,31 +347,45 @@ public class CustomerTest {
 		URI uri = URI.create(BASE_PATH+"/"+customerId);
 		return fetchCustomer(uri);
 	}
-	
+
 	private Customer fetchCustomer(URI uri) {
 		ResponseEntity<Customer> responseEntity = restCustomer.getForEntity(uri, Customer.class);
 		assertThat(responseEntity).isNotNull();
 		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		
+
 		Customer responseCustomer = responseEntity.getBody();
 		assertThat(responseCustomer).isNotNull();
-		
+
 		return responseCustomer;
 	}
 
 	@DataProvider
 	private Customer[] customerProvider() {
-		if( !insertedCustomers.isEmpty() ) {
-			return insertedCustomers.toArray(new Customer[insertedCustomers.size()]);
-		}
-
-		return new Customer[] {
-				Customer.builder()
-				.name("Aaaaaaaaaa Bbbbbbbbb")
-				.email("email@email.com")
-				.documentNumber("111.222.333-44")
-				.build()
-			};
+		return insertedCustomers.toArray(new Customer[insertedCustomers.size()]);
 	}
-	
+
+	@DataProvider
+	private InsertCustomerDTO[] insertCustomerProvider() {
+		InsertAddressDTO address = InsertAddressDTO.builder()
+				.street("5th Avenue")
+				.number("5009")
+				.complement("ap 92")
+				.district("Alphaville")
+				.zipCode("11223-001")
+				.cityId(1)
+				.build();
+
+		InsertCustomerDTO customer = InsertCustomerDTO.builder()
+				.name("Silvio Mori Neto")
+				.email("silviomori@gmail.com")
+				.documentNumber("111.222.333-44")
+				.customerType(CustomerType.INDIVIDUAL)
+				.address(address)
+				.phoneNumber("11-99890-9988")
+				.phoneNumber("11-99890-9989")
+				.build();
+
+		return new InsertCustomerDTO[] { customer };
+	}
+
 }

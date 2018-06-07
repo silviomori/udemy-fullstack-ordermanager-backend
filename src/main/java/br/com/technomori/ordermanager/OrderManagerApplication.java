@@ -19,7 +19,7 @@ import br.com.technomori.ordermanager.domain.Payment;
 import br.com.technomori.ordermanager.domain.Product;
 import br.com.technomori.ordermanager.domain.State;
 import br.com.technomori.ordermanager.domain.TicketPayment;
-import br.com.technomori.ordermanager.domain.enums.ClientType;
+import br.com.technomori.ordermanager.domain.enums.CustomerType;
 import br.com.technomori.ordermanager.domain.enums.PaymentStatus;
 import br.com.technomori.ordermanager.repositories.AddressRepository;
 import br.com.technomori.ordermanager.repositories.CategoryRepository;
@@ -111,7 +111,7 @@ public class OrderManagerApplication implements CommandLineRunner {
 				.phone("27363323")
 				.phone("93838393")
 				.documentNumber("36378912377")
-				.clientType(ClientType.PESSOAFISICA)
+				.customerType(CustomerType.INDIVIDUAL)
 				.build();
 		
 		customerRepository.save(customer);
