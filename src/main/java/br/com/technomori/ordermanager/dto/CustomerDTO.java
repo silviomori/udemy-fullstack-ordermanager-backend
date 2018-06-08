@@ -8,6 +8,7 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Length;
 
 import br.com.technomori.ordermanager.domain.Customer;
+import br.com.technomori.ordermanager.services.validation.CustomerUpdate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor(access=AccessLevel.PRIVATE)
 @Builder
+@CustomerUpdate
+
 public class CustomerDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	

@@ -48,7 +48,11 @@ public class CustomerTest {
 
 	// TODO: Make a test with a Customer Type null
 	@Test(dataProvider = "insertCustomerProvider")
-	public void creatingCustomer(InsertCustomerDTO dto) {
+	public void creatingCustomerTest(InsertCustomerDTO dto) {
+		creatingCustomer(dto);
+	}
+	
+	public URI creatingCustomer(InsertCustomerDTO dto) {
 
 		URI responseUri = restCustomer.postForLocation(BASE_PATH, dto);
 
@@ -67,9 +71,11 @@ public class CustomerTest {
 		assertThat(insertedCustomers.add(responseCustomer)).isTrue();
 
 		log.info("Created customer: " + responseCustomer);
+	
+		return responseUri;
 	}
 
-	@Test(dependsOnMethods = "creatingCustomer")
+	@Test(dependsOnMethods = "creatingCustomerTest")
 	public void fetchAll() {
 		ResponseEntity<List> responseEntity = restCustomer.getForEntity(BASE_PATH, List.class);
 		assertThat(responseEntity).isNotNull();
@@ -139,7 +145,7 @@ public class CustomerTest {
 		log.info("Deleting customer: Not allowed to delete customer: " + customerRemainsInDatabase);
 	}
 
-	@Test(dependsOnMethods = "deletingNotAllowed")
+	@Test(dependsOnMethods = "deletingNotAllowed", enabled=false)
 	public void pagingResults() {
 		 // adding a lot of customers to perform the paging test
 		 List<URI> addedCustomerUriList = new ArrayList();
@@ -299,7 +305,7 @@ public class CustomerTest {
 	}
 
 	@Test
-	public void validatingEmailUniquenessInDatabase() {
+	public void validatingEmailUniquenessOnInsert() {
 		InsertCustomerDTO dto = getGenericCustomerToInsert(1000);
 		
 		// Customer must be created successfully
@@ -339,6 +345,43 @@ public class CustomerTest {
 		} catch ( HttpClientErrorException ex ) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
+		}
+	}
+	
+	@Test
+	public void validatingEmailUniquenessOnUpdate() {
+		int pin = 2000;
+		InsertCustomerDTO dto = getGenericCustomerToInsert(pin);
+
+		// Customer must be created successfully
+		URI responseURI = creatingCustomer(dto);
+		
+		Customer customer = fetchCustomer(responseURI);
+		String updatedName = "[U] " + customer.getName();
+		String uniqueEmail = customer.getEmail();
+		
+		customer.setName(updatedName);
+		// !! DO NOT change email
+		restCustomer.put(responseURI, customer);
+
+		// Verifying that customer was really updated
+		customer = fetchCustomer(responseURI);
+		assertThat(customer.getName()).isEqualTo(updatedName);
+
+		// Inserting a new customer, with all different data
+		dto = getGenericCustomerToInsert(++pin);
+		responseURI = creatingCustomer(dto);
+
+		// Updating the new customer with an already used email
+		customer = fetchCustomer(responseURI);
+		customer.setEmail(uniqueEmail);
+		
+		try {
+			restCustomer.put(responseURI, customer);
+			Fail.fail("Different customers should not have the same email");
+		} catch( HttpClientErrorException e ) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			log.info("Exception caught as expected. "+e.getMessage());
 		}
 	}
 
