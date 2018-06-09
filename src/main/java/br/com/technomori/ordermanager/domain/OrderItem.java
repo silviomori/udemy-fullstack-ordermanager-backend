@@ -18,17 +18,19 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
+
 public class OrderItem {
 	
 	@EmbeddedId
 	private OrderItemPK pk;
 	
-	private Double discount;
-	private Integer quantity;
-	private Double price;
+	//Percentage value, e.g.: 5% --> 0.05d
+	private double discount;
+	private int quantity = 0;
+	private double price = 0d;
 	
 	@Builder
-	private OrderItem(Order order, Product product, Double discount, Integer quantity, Double price) {
+	private OrderItem(Order order, Product product, double discount, int quantity, double price) {
 		pk = OrderItemPK.builder().order(order).product(product).build();
 		this.discount = discount;
 		this.quantity = quantity;
@@ -36,7 +38,16 @@ public class OrderItem {
 	}
 	
 	public Double getSubTotal() {
-		return (  (price - discount) * quantity  );
+		return (  price * (1-discount) * quantity  );
+	}
+
+	// Add discount over the value already set
+	public void addDiscount(double discount) {
+		this.discount += discount;
+	}
+
+	public Product getProduct() {
+		return pk.getProduct();
 	}
 	
 }

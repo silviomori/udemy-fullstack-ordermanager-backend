@@ -2,7 +2,6 @@ package br.com.technomori.ordermanager.services;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,11 +39,7 @@ public class ProductService {
 			Integer pageNumber, Integer linesPerPage, String direction, String ... orderBy) {
 		PageRequest pageRequest = PageRequest.of(pageNumber, linesPerPage, Direction.valueOf(direction), orderBy);
 		
-		Logger.getAnonymousLogger().info("productName: "+productName);
-		Logger.getAnonymousLogger().info("categories: "+categoryIds);
-		
 		List<Category> categories = categoryRepo.findAllById(categoryIds);
-		Logger.getAnonymousLogger().info("categories: "+categories.size());
 		
 		return productRepo.findDistinctByNameContainingAndCategoriesIn(productName, categories, pageRequest);
 	}

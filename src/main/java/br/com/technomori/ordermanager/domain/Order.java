@@ -1,8 +1,10 @@
 package br.com.technomori.ordermanager.domain;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -27,6 +29,7 @@ import lombok.Setter;
 @AllArgsConstructor(access=AccessLevel.PRIVATE)
 @Builder
 @Table(name="ORDER_TABLE")
+
 public class Order {
 
 	@Id
@@ -42,13 +45,13 @@ public class Order {
 	@ManyToOne
 	private Address address;
 
-	@OneToOne(mappedBy="order")
+	@OneToOne(mappedBy="order", cascade=CascadeType.ALL)
 	@Setter(value=AccessLevel.NONE)
 	private Payment payment;
 	
-	@OneToMany(mappedBy="pk.order")
-	@Setter(value=AccessLevel.NONE)
-	private List<OrderItem> orderItems;
+	@OneToMany(mappedBy="pk.order", cascade=CascadeType.ALL)
+	@Builder.Default
+	private List<OrderItem> orderItems = new ArrayList<OrderItem>();
 
 	public Double getTotal() {
 		double total = 0d;
@@ -57,4 +60,5 @@ public class Order {
 		}
 		return total;
 	}
+
 }

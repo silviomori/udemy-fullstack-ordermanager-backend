@@ -1,7 +1,6 @@
 package br.com.technomori.ordermanager.resources;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,8 +46,6 @@ public class ProductResource {
 				categoryIdList,
 				pageNumber, linesPerPage, direction, orderBy);
 		
-		Logger.getAnonymousLogger().info("Produtos: "+pageProduct.getNumberOfElements());
-
 		Page<ProductDTO> pageDto = pageProduct.map( product -> new ProductDTO(product) );
 		return ResponseEntity.ok().body(pageDto);
 	}

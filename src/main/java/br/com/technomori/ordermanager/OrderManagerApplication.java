@@ -234,7 +234,7 @@ public class OrderManagerApplication implements CommandLineRunner {
 		OrderItem orderItem3 = OrderItem.builder()
 				.order(order2)
 				.product(printer)
-				.discount(100d)
+				.discount(12.5)
 				.quantity(1)
 				.price(800d)
 				.build();
@@ -250,6 +250,11 @@ public class OrderManagerApplication implements CommandLineRunner {
 				.build();
 				pay2.setPaymentStatus(PaymentStatus.PENDING);
 				pay2.setOrder(order2);
+				
+		/*
+		 * References to Payments and OrderItems were not included into
+		 * Order entity, then explicit save() methods need to be invoked for them.
+		 */
 		paymentRepository.saveAll(Arrays.asList(pay1,pay2));
 		orderRepository.saveAll(Arrays.asList(order1,order2));
 		orderItemRepository.saveAll(Arrays.asList(orderItem1,orderItem2,orderItem3));
