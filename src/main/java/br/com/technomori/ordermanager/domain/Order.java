@@ -49,4 +49,12 @@ public class Order {
 	@OneToMany(mappedBy="pk.order")
 	@Setter(value=AccessLevel.NONE)
 	private List<OrderItem> orderItems;
+
+	public Double getTotal() {
+		double total = 0d;
+		for( OrderItem item : orderItems ) {
+			total += item.getSubTotal();
+		}
+		return total;
+	}
 }
