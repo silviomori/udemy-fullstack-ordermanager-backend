@@ -70,28 +70,95 @@ public class OrderManagerApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		Category computingCategory = Category.builder().name("Computing").build();
 		Category officeCategory = Category.builder().name("Office").build();
+		Category bathAndBeddingCategory = Category.builder().name("Bath & Bedding").build();
+		Category techCategory = Category.builder().name("Tech").build();
+		Category gardenCategory = Category.builder().name("Garden").build();
+		Category decorCategory = Category.builder().name("Decor").build();
+		Category healthAndBeautyCategory = Category.builder().name("Health & Beauty").build();
 		
-		categoryRepository.saveAll(Arrays.asList(computingCategory,officeCategory));
+		categoryRepository.saveAll(Arrays.asList(
+				computingCategory,
+				officeCategory,
+				bathAndBeddingCategory,
+				techCategory,
+				gardenCategory,
+				decorCategory,
+				healthAndBeautyCategory
+				));
 		
 		
 		Product computer = Product.builder()
 				.name("Computer")
 				.price(2000d)
 				.category(computingCategory)
+				.category(techCategory)
 				.build();
 		Product printer = Product.builder()
 				.name("Printer")
 				.price(800d)
 				.category(computingCategory)
 				.category(officeCategory)
+				.category(techCategory)
 				.build();
 		Product mouse = Product.builder()
 				.name("Mouse")
 				.price(80d)
 				.category(computingCategory)
+				.category(techCategory)
+				.build();
+		Product officeDesk = Product.builder()
+				.name("Office Desk")
+				.price(300d)	
+				.category(officeCategory)
+				.build();
+		Product bathTowel = Product.builder()
+				.name("Bath Towel")
+				.price(50d)
+				.category(bathAndBeddingCategory)
+				.build();
+		Product bedSpread = Product.builder()
+				.name("Bed Spread")
+				.price(200d)
+				.category(bathAndBeddingCategory)
+				.build();
+		Product uhdTv = Product.builder()
+				.name("UHD TV 55 in.")
+				.price(3900d)
+				.category(techCategory)
+				.build();
+		Product brushCutter = Product.builder()
+				.name("Brush Cutter")
+				.price(800d)
+				.category(gardenCategory)
+				.build();
+		Product lampshade = Product.builder()
+				.name("Lampshade")
+				.price(100d)
+				.category(decorCategory)
+				.build();
+		Product pendant = Product.builder()
+				.name("Pendant")
+				.price(180d)
+				.category(decorCategory)
+				.build();
+		Product shampoo = Product.builder()
+				.name("Shampoo")
+				.price(10d)
+				.category(healthAndBeautyCategory)
 				.build();
 		
-		productRepository.saveAll(Arrays.asList(computer,printer,mouse));
+		productRepository.saveAll(Arrays.asList(
+				computer,
+				printer,
+				mouse,
+				officeDesk,
+				bathTowel,
+				bedSpread,
+				uhdTv,
+				brushCutter,
+				lampshade,
+				pendant,
+				shampoo));
 		
 		
 		State sp = State.builder().name("SP").build();

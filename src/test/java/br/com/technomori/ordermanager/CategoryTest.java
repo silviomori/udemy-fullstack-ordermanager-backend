@@ -26,7 +26,7 @@ import br.com.technomori.ordermanager.domain.Category;
 import br.com.technomori.ordermanager.dto.CategoryDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
-@Test
+@Test(dependsOnGroups="ProductTest")
 public class CategoryTest {
 
 	private static Logger log = Logger.getLogger(CategoryTest.class.getName());

@@ -30,7 +30,7 @@ import br.com.technomori.ordermanager.dto.InsertAddressDTO;
 import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
-@Test
+@Test(dependsOnGroups="ProductTest")
 public class CustomerTest {
 
 	private static Logger log = Logger.getLogger(CustomerTest.class.getName());
@@ -145,7 +145,7 @@ public class CustomerTest {
 		log.info("Deleting customer: Not allowed to delete customer: " + customerRemainsInDatabase);
 	}
 
-	@Test(dependsOnMethods = "deletingNotAllowed", enabled=false)
+	@Test(dependsOnMethods = "deletingNotAllowed")
 	public void pagingResults() {
 		 // adding a lot of customers to perform the paging test
 		 List<URI> addedCustomerUriList = new ArrayList();
