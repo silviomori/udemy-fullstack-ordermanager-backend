@@ -26,8 +26,6 @@ import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundExceptio
 @Service
 public class OrderService {
 
-	private Logger log = Logger.getLogger(OrderService.class.getName());
-
 	@Autowired
 	private OrderRepository repository;
 
@@ -40,6 +38,9 @@ public class OrderService {
 	@Autowired
 	private CustomerService customerService;
 
+	@Autowired
+	private EmailService emailService;
+	
 	@Autowired
 	private ApplicationContext ctx;
 
@@ -86,7 +87,7 @@ public class OrderService {
 
 		order.setCustomer(customerService.fetch(order.getCustomer().getId()));
 
-		log.info("New Order: " + order);
+		emailService.sendEmail(order);
 
 		return order;
 	}

@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import br.com.technomori.ordermanager.services.DBService;
+import br.com.technomori.ordermanager.services.EmailService;
+import br.com.technomori.ordermanager.services.MockEmailService;
 
 @Configuration
 @Profile("test")
@@ -18,5 +20,10 @@ public class TestProfileConfig {
 	@Bean
 	public boolean instatiateDatabase() {
 		return dbService.instantiateDatabase();
+	}
+
+	@Bean
+	public EmailService emailService() {
+		return new MockEmailService();
 	}
 }

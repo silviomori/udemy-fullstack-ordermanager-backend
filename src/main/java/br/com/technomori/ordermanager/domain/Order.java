@@ -84,7 +84,7 @@ public class Order {
 			builder.append(item);
 			builder.append("\n");
 		}
-		builder.append("\nTotal: ");
+		builder.append("Total: ");
 		builder.append(nf.format(getTotal()));
 		return builder.toString();
 	}
