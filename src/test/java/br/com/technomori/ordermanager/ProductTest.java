@@ -22,11 +22,12 @@ import br.com.technomori.ordermanager.dto.ProductDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @Test(groups = "ProductTest" )
+
 public class ProductTest {
 
 	private static Logger log = Logger.getLogger(ProductTest.class.getName());
 
-	private final String BASE_PATH = "http://localhost:8080/products";
+	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/products";
 
 	private RestTemplate restProduct;
 

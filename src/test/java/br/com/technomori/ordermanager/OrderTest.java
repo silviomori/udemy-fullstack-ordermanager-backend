@@ -26,7 +26,7 @@ public class OrderTest {
 
 	private static Logger log = Logger.getLogger(OrderTest.class.getName());
 
-	private final String BASE_PATH = "http://localhost:8080/orders";
+	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/orders";
 
 	private RestTemplate restOrder;
 

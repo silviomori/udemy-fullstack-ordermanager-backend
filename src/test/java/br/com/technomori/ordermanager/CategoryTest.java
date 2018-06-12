@@ -27,11 +27,12 @@ import br.com.technomori.ordermanager.dto.CategoryDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @Test(dependsOnGroups="ProductTest")
+
 public class CategoryTest {
 
 	private static Logger log = Logger.getLogger(CategoryTest.class.getName());
 
-	private final String BASE_PATH = "http://localhost:8080/categories";
+	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/categories";
 	
 	private RestTemplate restCategory;
 	

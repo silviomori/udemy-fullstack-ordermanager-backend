@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data-sources>
+	<data-source id="mysql5-163f125c466-37f62e8c1d89c0a" provider="mysql" driver="mysql5" name="MySQL - New Connection" save-password="true" show-system-objects="true" read-only="false">
+		<connection host="us-cdbr-iron-east-04.cleardb.net" port="3306" server="" database="heroku_9d01450111cf703" url="jdbc:mysql://us-cdbr-iron-east-04.cleardb.net:3306/heroku_9d01450111cf703" user="b6bfdfa876bdd7" password="S1YFdUAUFxJl8w==" type="prod">
+			<network-handler type="TUNNEL" id="ssh_tunnel" enabled="false" save-password="false">
+				<property name="sshConnectTimeout" value="10000"/>
+				<property name="port" value="22"/>
+				<property name="implementation" value="jsch"/>
+				<property name="authType" value="PASSWORD"/>
+			</network-handler>
+			<network-handler type="CONFIG" id="mysql_ssl" enabled="false" save-password="false">
+				<property name="ssl.public.key.retrieve" value="false"/>
+				<property name="ssl.verify.server" value="true"/>
+				<property name="ssl.require" value="false"/>
+			</network-handler>
+			<network-handler type="PROXY" id="socks_proxy" enabled="false" save-password="false">
+				<property name="socks-port" value="1080"/>
+			</network-handler>
+			<bootstrap autocommit="false"/>
+		</connection>
+	</data-source>
+	<filters/>
+</data-sources>

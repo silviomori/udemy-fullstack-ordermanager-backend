@@ -31,11 +31,12 @@ import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @Test(dependsOnGroups="ProductTest")
+
 public class CustomerTest {
 
 	private static Logger log = Logger.getLogger(CustomerTest.class.getName());
 
-	private final String BASE_PATH = "http://localhost:8080/customers";
+	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/customers";
 
 	private RestTemplate restCustomer;
 
