@@ -15,8 +15,8 @@ public class TestSuite {
 	
 	private static Logger logger = Logger.getLogger(TestSuite.class.getName());
 	
-	final static String SERVER_ADDRESS = "https://silviomori-order-manager.herokuapp.com";
-//	final static String SERVER_ADDRESS = "http://localhost:8080";
+//	final static String SERVER_ADDRESS = "https://silviomori-order-manager.herokuapp.com";
+	final static String SERVER_ADDRESS = "http://localhost:8080";
 
 	@BeforeSuite
 	public void beforeSuite() {

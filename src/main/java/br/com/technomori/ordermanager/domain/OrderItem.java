@@ -1,6 +1,8 @@
 package br.com.technomori.ordermanager.domain;
 
 import java.io.Serializable;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
@@ -57,6 +59,27 @@ public class OrderItem {
 		return pk.getProduct();
 	}
 	
+	public void setProduct(Product product) {
+		pk.setProduct(product);
+	}
+
+	@Override
+	public String toString() {
+		Locale locale = new Locale("en", "US");
+		NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
+		StringBuilder builder = new StringBuilder();
+		builder.append(getProduct().getName());
+		builder.append(", Quantity: ");
+		builder.append(getQuantity());
+		builder.append(", Unit price: ");
+		builder.append(nf.format(price));
+		builder.append(", Unit discount: ");
+		builder.append(nf.format(getDiscount()*getPrice()));
+		builder.append(", Subtotal: ");
+		builder.append(nf.format(getSubTotal()));
+		return builder.toString();
+	}
+
 }
 
 @Data
