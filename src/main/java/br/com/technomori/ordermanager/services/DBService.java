@@ -158,8 +158,8 @@ public class DBService {
 		cityRepository.saveAll(Arrays.asList(saopaulo,campinas,uberlandia));
 		
 		Customer customer = Customer.builder()
-				.name("Maria Silva")
-				.email("maria@gmail.com")
+				.name("Sílvio Mori Neto")
+				.email("silviomori@gmail.com")
 				.phone("27363323")
 				.phone("93838393")
 				.documentNumber("36378912377")
