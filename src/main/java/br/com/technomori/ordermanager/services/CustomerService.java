@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,9 @@ public class CustomerService {
 
 	@Autowired
 	private CustomerRepository repository;
+	
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 	
 	public Customer fetch(Integer id) throws ObjectNotFoundException {
 		
@@ -102,6 +106,7 @@ public class CustomerService {
 				.documentNumber(dto.getDocumentNumber())
 				.customerType(dto.getCustomerType())
 				.phones(dto.getPhoneNumbers())
+				.password(passwordEncoder.encode(dto.getPassword()))
 				.build();
 
 

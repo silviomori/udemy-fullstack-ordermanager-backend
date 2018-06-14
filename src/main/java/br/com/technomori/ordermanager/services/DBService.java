@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.technomori.ordermanager.domain.Address;
@@ -51,6 +52,9 @@ public class DBService {
 	private PaymentRepository paymentRepository;	
 	@Autowired
 	private OrderItemRepository orderItemRepository;
+	
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 
 	public boolean instantiateDatabase() {
 		Category computingCategory = Category.builder().name("Computing").build();
@@ -160,6 +164,7 @@ public class DBService {
 		Customer customer = Customer.builder()
 				.name("Sílvio Mori Neto")
 				.email("silviomori@gmail.com")
+				.password(passwordEncoder.encode("123"))
 				.phone("27363323")
 				.phone("93838393")
 				.documentNumber("36378912377")

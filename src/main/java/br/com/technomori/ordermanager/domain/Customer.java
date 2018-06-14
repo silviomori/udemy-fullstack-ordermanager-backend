@@ -38,6 +38,8 @@ public class Customer {
 	private String name;
 	@Column(unique=true)
 	private String email;
+	@JsonIgnore
+	private String password;
 	private String documentNumber;
 
 	//TODO save ID to database

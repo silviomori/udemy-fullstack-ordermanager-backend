@@ -32,6 +32,8 @@ public class InsertCustomerDTO implements Serializable {
 	@NotEmpty(message="Required field.")
 	@Email(message="Invalid email address.")
 	private String email;
+	@NotEmpty
+	private String password;
 	@NotEmpty(message="Required field.")
 	private String documentNumber;
 	private CustomerType customerType;
