@@ -2,8 +2,16 @@ package br.com.technomori.ordermanager.services;
 
 import java.util.Date;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import br.com.technomori.ordermanager.domain.Order;
 
@@ -12,8 +20,14 @@ public abstract class AbstractEmailService implements EmailService {
 	@Value("${email.default.sender}")
 	private String sender;
 	
+	@Autowired
+	private TemplateEngine templateEngine;
+	
+	@Autowired
+	private JavaMailSender javaMailSender;
+	
 	@Override
-	public void sendEmail(Order order) {
+	public void sendOrderPlacedEmail(Order order) {
 		SimpleMailMessage sm = prepareSimpleMailMessage(order);
 		sendEmail(sm);
 	}
@@ -26,5 +40,36 @@ public abstract class AbstractEmailService implements EmailService {
 		sm.setSentDate(new Date(System.currentTimeMillis()));
 		sm.setText(order.toString());
 		return sm;
+	}
+	
+	@Override
+	public void sendOrderPlacedHtmlEmail(Order order) {
+		MimeMessage mm = null;
+		try {
+			mm = prepareMimeMailMessage(order);
+		} catch (MessagingException e) {
+			sendOrderPlacedEmail(order);
+		}
+		sendHtmlEmail(mm);
+	}
+
+	private MimeMessage prepareMimeMailMessage(Order order) throws MessagingException {
+		MimeMessage mm = javaMailSender.createMimeMessage();
+		
+		MimeMessageHelper mmh = new MimeMessageHelper(mm, true);
+		mmh.setTo(order.getCustomer().getEmail());
+		mmh.setFrom(sender);
+		mmh.setSubject("ORDER PLACED: #"+order.getId() );
+		mmh.setSentDate(new Date(System.currentTimeMillis()));
+		mmh.setText(getHtmlFromOrderPlacedTemplate(order), true);
+		
+		return mm;
+	}
+
+	protected String getHtmlFromOrderPlacedTemplate(Order order) {
+		Context ctx = new Context();
+		ctx.setVariable("order", order);
+		
+		return templateEngine.process("email/OrderPlaced", ctx);
 	}
 }

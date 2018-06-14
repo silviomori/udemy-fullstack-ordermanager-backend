@@ -86,7 +86,7 @@ public class OrderService {
 
 		order.setCustomer(customerService.fetch(order.getCustomer().getId()));
 
-		emailService.sendEmail(order);
+		emailService.sendOrderPlacedHtmlEmail(order);
 
 		return order;
 	}
