@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.technomori.ordermanager.domain.Address;
 import br.com.technomori.ordermanager.domain.City;
 import br.com.technomori.ordermanager.domain.Customer;
+import br.com.technomori.ordermanager.domain.enums.UserProfile;
 import br.com.technomori.ordermanager.dto.CustomerDTO;
 import br.com.technomori.ordermanager.dto.InsertAddressDTO;
 import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
@@ -107,6 +108,9 @@ public class CustomerService {
 				.customerType(dto.getCustomerType())
 				.phones(dto.getPhoneNumbers())
 				.password(passwordEncoder.encode(dto.getPassword()))
+				.userProfiles(dto.getUserProfiles())
+				//Every customer has, at least, a "Customer Profile"
+				.userProfile(UserProfile.CUSTOMER)
 				.build();
 
 

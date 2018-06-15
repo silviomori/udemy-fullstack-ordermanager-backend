@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.testng.annotations.Test;
 
 import br.com.technomori.ordermanager.domain.Customer;
 import br.com.technomori.ordermanager.domain.enums.CustomerType;
+import br.com.technomori.ordermanager.domain.enums.UserProfile;
 import br.com.technomori.ordermanager.dto.CustomerDTO;
 import br.com.technomori.ordermanager.dto.InsertAddressDTO;
 import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
@@ -53,6 +55,13 @@ public class CustomerTest {
 		creatingCustomer(dto);
 	}
 	
+	@Test(dataProvider = "insertCustomerProvider")
+	public void creatingCustomerWithNoUserProfileTest(InsertCustomerDTO dto) {
+		dto.setEmail(dto.getEmail()+"tesUserProfile");
+		dto.setUserProfiles(new HashSet<UserProfile>());
+		creatingCustomer(dto);
+	}
+	
 	public URI creatingCustomer(InsertCustomerDTO dto) {
 
 		URI responseUri = restCustomer.postForLocation(BASE_PATH, dto);
@@ -68,6 +77,12 @@ public class CustomerTest {
 		assertThat(responseCustomer.getName()).isEqualTo(dto.getName());
 		assertThat(responseCustomer.getPhones().size()).isEqualTo(dto.getPhoneNumbers().size());
 		assertThat(responseCustomer.getAddresses().size()).isEqualTo(dto.getAddresses().size());
+		
+		if(dto.getUserProfiles().size() == 0) {
+			assertThat(responseCustomer.getUserProfiles().size()).isEqualTo(dto.getUserProfiles().size()+1);
+		} else {
+			assertThat(responseCustomer.getUserProfiles().size()).isEqualTo(dto.getUserProfiles().size());
+		}
 
 		assertThat(insertedCustomers.add(responseCustomer)).isTrue();
 
@@ -546,6 +561,7 @@ public class CustomerTest {
 				.address(address)
 				.phoneNumber("11-99890-9988"+pin)
 				.phoneNumber("11-99890-9989"+pin)
+				.password("123")
 				.build();
 
 		return customer;
@@ -569,12 +585,14 @@ public class CustomerTest {
 
 		InsertCustomerDTO customer = InsertCustomerDTO.builder()
 				.name("Silvio Mori Neto")
-				.email("silviomori@gmail.com")
+				.email("silviomori_test@gmail.com")
 				.documentNumber("11122233344")
 				.customerType(CustomerType.INDIVIDUAL)
 				.address(address)
 				.phoneNumber("11-99890-9988")
 				.phoneNumber("11-99890-9989")
+				.password("123")
+				.userProfiles(Arrays.asList(UserProfile.values()))
 				.build();
 
 		return new InsertCustomerDTO[] { customer };

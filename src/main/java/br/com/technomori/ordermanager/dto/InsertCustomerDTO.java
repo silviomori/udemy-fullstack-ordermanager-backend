@@ -10,6 +10,7 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Length;
 
 import br.com.technomori.ordermanager.domain.enums.CustomerType;
+import br.com.technomori.ordermanager.domain.enums.UserProfile;
 import br.com.technomori.ordermanager.services.validation.CustomerInsert;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -46,4 +47,6 @@ public class InsertCustomerDTO implements Serializable {
 	@Singular
 	private Set<String> phoneNumbers;
 	
+	@Singular
+	private Set<UserProfile> userProfiles;	
 }

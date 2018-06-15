@@ -20,6 +20,7 @@ import br.com.technomori.ordermanager.domain.State;
 import br.com.technomori.ordermanager.domain.TicketPayment;
 import br.com.technomori.ordermanager.domain.enums.CustomerType;
 import br.com.technomori.ordermanager.domain.enums.PaymentStatus;
+import br.com.technomori.ordermanager.domain.enums.UserProfile;
 import br.com.technomori.ordermanager.repositories.AddressRepository;
 import br.com.technomori.ordermanager.repositories.CategoryRepository;
 import br.com.technomori.ordermanager.repositories.CityRepository;
@@ -169,6 +170,7 @@ public class DBService {
 				.phone("93838393")
 				.documentNumber("36378912377")
 				.customerType(CustomerType.INDIVIDUAL)
+				.userProfile(UserProfile.CUSTOMER)
 				.build();
 		
 		customerRepository.save(customer);
@@ -194,7 +196,30 @@ public class DBService {
 		
 		addressRepository.saveAll(Arrays.asList(address1,address2));
 		
+		Customer customer2 = Customer.builder()
+				.name("TechnoMori Desenvolvimento de Sistemas")
+				.email("technomorisistemas@gmail.com")
+				.password(passwordEncoder.encode("123"))
+				.phone("28363323")
+				.phone("94838393")
+				.documentNumber("37378912377")
+				.customerType(CustomerType.INDIVIDUAL)
+				.userProfile(UserProfile.ADMIN)
+				.userProfile(UserProfile.CUSTOMER)
+				.build();
 		
+		customerRepository.save(customer2);
+		
+		Address address3 = Address.builder()
+				.street("5th Avenue")
+				.number("64")
+				.district("Central Perk")
+				.zipCode("38200830")
+				.city(saopaulo)
+				.customer(customer2)
+				.build();
+		
+		addressRepository.save( address3 );
 		
 		Order order1 = Order.builder()
 				.instant(new Date(System.currentTimeMillis()-(12*24*60*60*1000)))

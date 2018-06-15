@@ -9,6 +9,7 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -17,6 +18,7 @@ import javax.persistence.OneToMany;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import br.com.technomori.ordermanager.domain.enums.CustomerType;
+import br.com.technomori.ordermanager.domain.enums.UserProfile;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +32,7 @@ import lombok.Singular;
 @NoArgsConstructor
 @AllArgsConstructor(access=AccessLevel.PRIVATE)
 @Builder
+
 public class Customer {
 
 	@Id
@@ -58,4 +61,9 @@ public class Customer {
 	@OneToMany(mappedBy="customer")
 	@Setter(value=AccessLevel.NONE)
 	private List<Order> orders;
+
+	@ElementCollection(fetch=FetchType.EAGER)
+	@CollectionTable(name="USER_PROFILE")
+	@Singular
+	private Set<UserProfile> userProfiles;
 }

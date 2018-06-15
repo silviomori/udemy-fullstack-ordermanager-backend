@@ -25,7 +25,6 @@ import lombok.ToString;
 @Getter
 @Setter
 @EqualsAndHashCode
-@ToString
 @NoArgsConstructor
 
 public class OrderItem {
@@ -87,6 +86,7 @@ public class OrderItem {
 @AllArgsConstructor(access=AccessLevel.PRIVATE)
 @Builder
 @Embeddable
+
 class OrderItemPK implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
