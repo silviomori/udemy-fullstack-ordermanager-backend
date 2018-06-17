@@ -29,11 +29,10 @@ public class ProductTest {
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/products";
 
-	private RestTemplate restProduct;
+	private RestTemplate restProduct = RestTemplateFactory.getRestTemplate();
 
 	@BeforeClass
 	public void beforeClass() {
-		restProduct = new RestTemplate();
 	}
 
 	@Test(dataProvider="fetchingProductsProvider")

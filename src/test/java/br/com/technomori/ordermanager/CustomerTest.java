@@ -40,13 +40,12 @@ public class CustomerTest {
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/customers";
 
-	private RestTemplate restCustomer;
+	private RestTemplate restCustomer = RestTemplateFactory.getRestTemplate();
 
 	private List<Customer> insertedCustomers = new ArrayList<Customer>();
 
 	@BeforeClass
 	public void beforeClass() {
-		restCustomer = new RestTemplate();
 	}
 
 	// TODO: Make a test with a Customer Type null

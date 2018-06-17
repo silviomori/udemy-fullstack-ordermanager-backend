@@ -20,7 +20,7 @@ import br.com.technomori.ordermanager.dto.InsertOrderDTO;
 import br.com.technomori.ordermanager.dto.InsertOrderItemDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
-@Test(groups = "OrderTest" )
+@Test(groups = "OrderTest")
 
 public class OrderTest {
 
@@ -28,11 +28,10 @@ public class OrderTest {
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/orders";
 
-	private RestTemplate restOrder;
+	private RestTemplate restOrder = RestTemplateFactory.getRestTemplate();
 
 	@BeforeClass
 	public void beforeClass() {
-		restOrder = new RestTemplate();
 	}
 
 	@Test(dataProvider="creatingOrderProvider")

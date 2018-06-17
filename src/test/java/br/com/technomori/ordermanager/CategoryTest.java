@@ -34,13 +34,12 @@ public class CategoryTest {
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/categories";
 	
-	private RestTemplate restCategory;
-	
+	private RestTemplate restCategory = RestTemplateFactory.getRestTemplate();
+
 	private List<Category> insertedCategories = new ArrayList<Category>();
 	
 	@BeforeClass
 	public void beforeClass() {
-		restCategory = new RestTemplate();
 	}
 	
 	@Test( dataProvider = "categoryProvider" )

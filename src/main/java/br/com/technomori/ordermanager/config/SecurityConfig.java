@@ -19,6 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import br.com.technomori.ordermanager.security.JWTAuthenticationFilter;
+import br.com.technomori.ordermanager.security.JWTAuthorizationFilter;
 import br.com.technomori.ordermanager.security.JWTUtil;
 
 @Configuration
@@ -36,8 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private JWTUtil jwtUtil;
 	
 	public static final String[] PUBLIC_MATCHERS = {
-			"/h2-console/**",
-			"/customers/**"
+			"/h2-console/**"
 	};
 	
 	public static final String[] PUBLIC_MATCHERS_GET = {
@@ -59,6 +59,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.antMatchers(PUBLIC_MATCHERS).permitAll()
 			.anyRequest().authenticated();
 		http.addFilter(new JWTAuthenticationFilter(authenticationManager(), jwtUtil));
+		http.addFilter(new JWTAuthorizationFilter(authenticationManager(), jwtUtil, userDetailsService));
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
 	
