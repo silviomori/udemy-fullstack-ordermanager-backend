@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +51,7 @@ public class CategoryResource {
 	}
 
 	@RequestMapping(method=RequestMethod.POST)
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<Void> insert(@Valid @RequestBody CategoryDTO categoryDTO) {
 		// Constraints in a @Valid object must be accessed in this method, otherwise they will not be validated
 		Category category = service.getCategoryFromDTO(categoryDTO);
@@ -61,6 +63,7 @@ public class CategoryResource {
 	}
 	
 	@RequestMapping(method=RequestMethod.PUT, value="/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<Void> update(@PathVariable Integer id, @Valid @RequestBody CategoryDTO categoryDTO) {
 		// Constraints in a @Valid object must be accessed in this method, otherwise they will not be validated
 		Category category = service.getCategoryFromDTO(categoryDTO);
@@ -71,6 +74,7 @@ public class CategoryResource {
 	}
 
 	@RequestMapping(method=RequestMethod.DELETE, value="/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<Category> delete(@PathVariable Integer id) {
 		service.delete(id);
 		return ResponseEntity.noContent().build();

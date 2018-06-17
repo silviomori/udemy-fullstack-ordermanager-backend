@@ -5,9 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.logging.Logger;
 
+import org.assertj.core.api.Fail;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -28,7 +31,7 @@ public class OrderTest {
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/orders";
 
-	private RestTemplate restOrder = RestTemplateFactory.getRestTemplate();
+	private RestTemplate restOrder = RestTemplateFactory.getRestTemplateCustomerProfile();
 
 	@BeforeClass
 	public void beforeClass() {
@@ -45,6 +48,45 @@ public class OrderTest {
 
 		log.info("Order created: "+entityResult.getBody());
 	}
+	
+	@Test
+	public void testingAccessControlToEndpoints() {
+		// GET - by ID
+		try {
+			RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH+"/1", Object.class);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(BASE_PATH+"/1", Object.class);
+		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(BASE_PATH+"/1", Object.class);
+
+		// POST
+		InsertOrderDTO insertOrderDTO_1 = InsertOrderDTO.builder()
+				.customerId(1)
+				.customerAddressId(1)
+				.paymentType(TicketPayment.IDENTIFIER)
+				.orderItem(InsertOrderItemDTO.builder().productId(1).quantity(1).build())
+				.build();
+		try {
+			RestTemplateFactory.getRestTemplateNoProfile().postForLocation(BASE_PATH, insertOrderDTO_1);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+
+		RestTemplateFactory.getRestTemplateCustomerProfile().postForLocation(BASE_PATH, insertOrderDTO_1);
+		InsertOrderDTO insertOrderDTO_2 = InsertOrderDTO.builder()
+				.customerId(1)
+				.customerAddressId(1)
+				.paymentType(TicketPayment.IDENTIFIER)
+				.orderItem(InsertOrderItemDTO.builder().productId(1).quantity(1).build())
+				.build();
+		RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, insertOrderDTO_2);
+	}
+	
 	
 	@DataProvider
 	private InsertOrderDTO[] creatingOrderProvider() {

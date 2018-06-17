@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,12 +36,14 @@ public class CustomerResource {
 	}
 
 	@RequestMapping(method=RequestMethod.GET)
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<List<CustomerDTO>> fetchAll() {
 		List<CustomerDTO> list = service.fetchAll();
 		return ResponseEntity.ok().body(list);
 	}
 
 	@RequestMapping(method=RequestMethod.GET, value="/paging")
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<Page<CustomerDTO>> pagingAll(
 			@RequestParam(value="pageNumber", defaultValue="0") Integer pageNumber,
 			@RequestParam(value="linerPerPage", defaultValue="24") Integer linesPerPage,
@@ -73,6 +76,7 @@ public class CustomerResource {
 	}
 
 	@RequestMapping(method=RequestMethod.DELETE, value="/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<Customer> delete(@PathVariable Integer id) {
 		service.delete(id);
 		return ResponseEntity.noContent().build();

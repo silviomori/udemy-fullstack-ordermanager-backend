@@ -14,8 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import br.com.technomori.ordermanager.domain.Category;
@@ -30,13 +28,6 @@ public class AccessControlTest {
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/login";
 
-	private RestTemplate restLogin;
-
-	@BeforeClass
-	public void beforeClass() {
-		restLogin = new RestTemplate();
-	}
-
 	public void loginBadCredentials() {
 		
 		CredentialsDTO credentialsDTO = CredentialsDTO.builder()
@@ -45,7 +36,7 @@ public class AccessControlTest {
 				.build();
 		
 		try {
-			restLogin.postForEntity(BASE_PATH, credentialsDTO, Void.class);
+			RestTemplateFactory.getRestTemplateNoProfile().postForEntity(BASE_PATH, credentialsDTO, Void.class);
 			
 			Fail.fail("Invalid credentials should not be authorized.");
 		} catch( HttpClientErrorException e) {
@@ -59,29 +50,40 @@ public class AccessControlTest {
 				.password("123")
 				.build();
 		
-		ResponseEntity<Void> responseEntity = restLogin.postForEntity(BASE_PATH, credentialsDTO, Void.class);
+		ResponseEntity<Void> responseEntity = RestTemplateFactory.getRestTemplateNoProfile().postForEntity(BASE_PATH, credentialsDTO, Void.class);
 
 		assertThat(responseEntity).isNotNull();
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	public void publicAccess() {
-		ResponseEntity<?> responseEntity = restLogin.getForEntity(TestSuite.SERVER_ADDRESS+"/h2-console", null, Object.class);
+		ResponseEntity<?> responseEntity = RestTemplateFactory.getRestTemplateNoProfile().getForEntity(TestSuite.SERVER_ADDRESS+"/h2-console", null, Object.class);
 
 		assertThat(responseEntity).isNotNull();
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	public void publicGetAccess() {
-		ResponseEntity<Category> responseEntity = restLogin.getForEntity(TestSuite.SERVER_ADDRESS+"/categories/1", null, Category.class);
+		ResponseEntity<Category> responseEntity = RestTemplateFactory.getRestTemplateNoProfile().getForEntity(TestSuite.SERVER_ADDRESS+"/categories/1", null, Category.class);
 
 		assertThat(responseEntity).isNotNull();
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);		
 	}
 	
-	public void forbiddenAccess() {
+	public void forbiddenAccess_NoTokenRequest() {
 		try {
-			restLogin.postForEntity(
+			RestTemplateFactory.getRestTemplateNoProfile().postForEntity(
+					TestSuite.SERVER_ADDRESS+"/categories", Category.builder().name("new category").build(), Object.class);
+		
+			Fail.fail("A new category must not be created by a unauthorized user.");
+		} catch( HttpClientErrorException e ) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+	}
+	
+	public void forbiddenAccess_ProfileNotAllowed() {
+		try {
+			RestTemplateFactory.getRestTemplateCustomerProfile().postForEntity(
 					TestSuite.SERVER_ADDRESS+"/categories", Category.builder().name("new category").build(), Object.class);
 		
 			Fail.fail("A new category must not be created by a unauthorized user.");
@@ -91,26 +93,8 @@ public class AccessControlTest {
 	}
 	
 	public void accessAuthorized() throws URISyntaxException {
-		CredentialsDTO credentialsDTO = CredentialsDTO.builder()
-				.email("silviomori@gmail.com")
-				.password("123")
-				.build();
-		
-		ResponseEntity<Void> responseAuthorization = restLogin.postForEntity(BASE_PATH, credentialsDTO, Void.class);
-		assertThat(responseAuthorization).isNotNull();
-		assertThat(responseAuthorization.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-		List<String> auth = responseAuthorization.getHeaders().get("Authorization");
-		assertThat(auth)
-			.isNotNull()
-			.isNotEmpty();
-		
-		RequestEntity<Category> requestEntity = RequestEntity
-				.post(new URI(TestSuite.SERVER_ADDRESS+"/categories"))
-				.header("Authorization", auth.toArray(new String[auth.size()]))
-				.body(Category.builder().name("new category").build());
-
-		ResponseEntity<?> responseCategory = restLogin.exchange(requestEntity, Object.class);
+		ResponseEntity<?> responseCategory = RestTemplateFactory.getRestTemplateAdminProfile().postForEntity(
+				TestSuite.SERVER_ADDRESS+"/categories", Category.builder().name("new category").build(), Object.class);
 
 		assertThat(responseCategory).isNotNull();
 		assertThat(responseCategory.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -122,7 +106,7 @@ public class AccessControlTest {
 				.password("123")
 				.build();
 		
-		ResponseEntity<Void> responseAuthorization = restLogin.postForEntity(BASE_PATH, credentialsDTO, Void.class);
+		ResponseEntity<Void> responseAuthorization = RestTemplateFactory.getRestTemplateNoProfile().postForEntity(BASE_PATH, credentialsDTO, Void.class);
 		assertThat(responseAuthorization).isNotNull();
 		assertThat(responseAuthorization.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -140,7 +124,7 @@ public class AccessControlTest {
 				.body(Category.builder().name("new category").build());
 
 		try {
-			restLogin.exchange(requestEntity, Object.class);
+			RestTemplateFactory.getRestTemplateNoProfile().exchange(requestEntity, Object.class);
 
 			Fail.fail("An invalid token should not be validated.");
 		} catch( HttpClientErrorException e ) {

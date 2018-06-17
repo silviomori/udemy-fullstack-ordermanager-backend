@@ -17,7 +17,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -34,8 +33,6 @@ public class CategoryTest {
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/categories";
 	
-	private RestTemplate restCategory = RestTemplateFactory.getRestTemplate();
-
 	private List<Category> insertedCategories = new ArrayList<Category>();
 	
 	@BeforeClass
@@ -45,7 +42,7 @@ public class CategoryTest {
 	@Test( dataProvider = "categoryProvider" )
 	public void creatingCategory(Category category) {
 		CategoryDTO dto = new CategoryDTO(category);
-		URI responseUri = restCategory.postForLocation(BASE_PATH, dto);
+		URI responseUri = RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, dto);
 		
 		assertThat(responseUri).isNotNull();
 
@@ -60,7 +57,7 @@ public class CategoryTest {
 	
 	@Test( dependsOnMethods = "creatingCategory")
 	public void fetchAll() {
-		ResponseEntity<List> responseEntity = restCategory.getForEntity(BASE_PATH, List.class);	
+		ResponseEntity<List> responseEntity = RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH, List.class);	
 		assertThat(responseEntity).isNotNull();
 		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		assertThat(responseEntity.getBody()).hasAtLeastOneElementOfType(Object.class);
@@ -73,7 +70,7 @@ public class CategoryTest {
 		CategoryDTO dto = new CategoryDTO(category);
 		dto.setName("[U] "+dto.getName());
 		URI uri = URI.create(BASE_PATH+"/"+dto.getId());
-		restCategory.put(uri, dto);
+		RestTemplateFactory.getRestTemplateAdminProfile().put(uri, dto);
 		
 		Category updatedCategory = fetchCategory(uri);
 		assertThat(updatedCategory.getId()).isEqualTo(dto.getId());
@@ -92,7 +89,7 @@ public class CategoryTest {
 		URI uri = URI.create(BASE_PATH+"/"+category.getId());
 		
 		try { // try to delete the category from database
-			restCategory.delete(uri);
+			RestTemplateFactory.getRestTemplateAdminProfile().delete(uri);
 		} catch(HttpClientErrorException ex) { // Category was not found to be deleted
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 			log.info("Deleting category: Category is no longer in database: "+category);
@@ -100,7 +97,7 @@ public class CategoryTest {
 		}
 
 		try { // try to find the deleted category in database
-			restCategory.getForEntity(uri, Category.class);
+			RestTemplateFactory.getRestTemplateNoProfile().getForEntity(uri, Category.class);
 		} catch(HttpClientErrorException ex) { // Category has just been deleted
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 			log.info("Deleted category: "+category);
@@ -116,7 +113,7 @@ public class CategoryTest {
 		int categoryId = 1;
 		URI uri = URI.create(BASE_PATH+"/"+categoryId);
 		try { // try to delete the category from database
-			restCategory.delete(uri);
+			RestTemplateFactory.getRestTemplateAdminProfile().delete(uri);
 		} catch(HttpClientErrorException ex) { // Deletion has not been allowed
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 		}
@@ -129,8 +126,8 @@ public class CategoryTest {
 	public void pagingResults() {
 		// adding a lot of categories to perform the paging test
 		List<URI> addedCategoryUriList = new ArrayList();
-		for(int i = 1; i < 51; ++i) {
-			URI responseUri = restCategory.postForLocation(
+		for(int i = 1; i < 10; ++i) {
+			URI responseUri = RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(
 					BASE_PATH,
 					Category.builder().name("test"+i).build());
 			addedCategoryUriList.add(responseUri);
@@ -143,7 +140,7 @@ public class CategoryTest {
 		 */
 		//do {
 			ResponseEntity<PagedResources<CategoryDTO>> responseEntity =
-					restCategory.exchange(BASE_PATH+"/paging",
+					RestTemplateFactory.getRestTemplateNoProfile().exchange(BASE_PATH+"/paging?pageNumber=2&linerPerPage=5",
 	                HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<CategoryDTO>>() {});
 			
 			assertThat(responseEntity).isNotNull();
@@ -155,7 +152,7 @@ public class CategoryTest {
 
 		// deleting the categories added to perform this test
 		for (URI uri : addedCategoryUriList) {
-			restCategory.delete(uri);
+			RestTemplateFactory.getRestTemplateAdminProfile().delete(uri);
 		}
 	}
 	
@@ -208,7 +205,7 @@ public class CategoryTest {
 		try {
 			//Method updatingCategory can not be invoked here because it modifies the category name
 			URI uri = URI.create(BASE_PATH+"/"+categoryDTO.getId()); // must throw an exception
-			restCategory.put(uri, categoryDTO);
+			RestTemplateFactory.getRestTemplateAdminProfile().put(uri, categoryDTO);
 
 			Fail.fail("Category should not be updated with an empty name.");
 		} catch( HttpClientErrorException ex ) {
@@ -220,7 +217,7 @@ public class CategoryTest {
 		try {
 			//Method updatingCategory can not be invoked here because it modifies the category name
 			URI uri = URI.create(BASE_PATH+"/"+categoryDTO.getId()); // must throw an exception
-			restCategory.put(uri, categoryDTO);
+			RestTemplateFactory.getRestTemplateAdminProfile().put(uri, categoryDTO);
 			
 			Fail.fail("Category should not be updated with a short name.");
 		} catch( HttpClientErrorException ex ) {
@@ -242,13 +239,90 @@ public class CategoryTest {
 		try {
 			//Method updatingCategory can not be invoked here because it modifies the category name
 			URI uri = URI.create(BASE_PATH+"/"+categoryDTO.getId()); // must throw an exception
-			restCategory.put(uri, categoryDTO);
+			RestTemplateFactory.getRestTemplateAdminProfile().put(uri, categoryDTO);
 			
 			Fail.fail("Category should not be updated with a too long name.");
 		} catch( HttpClientErrorException ex ) {
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 			log.info(ex.getMessage());
 		}		
+	}
+	
+	@Test
+	public void testingAccessControlToEndpoints() {
+		// GET - by ID
+		RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH+"/1", Object.class);
+		RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(BASE_PATH+"/1", Object.class);
+		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(BASE_PATH+"/1", Object.class);
+
+		// GET - All
+		RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH, Object.class);
+		RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(BASE_PATH, Object.class);
+		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(BASE_PATH, Object.class);
+
+		// GET - Paging
+		RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH+"/paging", Object.class);
+		RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(BASE_PATH+"/paging", Object.class);
+		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(BASE_PATH+"/paging", Object.class);
+
+
+		// POST
+		CategoryDTO dto = CategoryDTO.builder().name("new category").build();
+		try {
+			RestTemplateFactory.getRestTemplateNoProfile().postForLocation(BASE_PATH, dto);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		try {
+			RestTemplateFactory.getRestTemplateCustomerProfile().postForLocation(BASE_PATH, dto);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		URI uriInsertedCategory = RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, dto);
+		
+		
+		// PUT
+		Category insertedCategory = RestTemplateFactory
+				.getRestTemplateNoProfile().getForEntity(uriInsertedCategory, Category.class)
+				.getBody();
+		dto = CategoryDTO.builder().id(insertedCategory.getId()).name(insertedCategory.getName()+" - updated").build();
+		try {
+			RestTemplateFactory.getRestTemplateNoProfile().put(uriInsertedCategory, dto);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		try {
+			RestTemplateFactory.getRestTemplateCustomerProfile().put(uriInsertedCategory, dto);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		RestTemplateFactory.getRestTemplateAdminProfile().put(uriInsertedCategory, dto);
+
+		
+		// DELETE
+		try {
+			RestTemplateFactory.getRestTemplateNoProfile().delete(uriInsertedCategory);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		try {
+			RestTemplateFactory.getRestTemplateCustomerProfile().delete(uriInsertedCategory);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		RestTemplateFactory.getRestTemplateAdminProfile().delete(uriInsertedCategory);
 	}
 
 	private Category fetchCategory(Integer categoryId) {
@@ -257,7 +331,7 @@ public class CategoryTest {
 	}
 	
 	private Category fetchCategory(URI uri) {
-		ResponseEntity<Category> responseEntity = restCategory.getForEntity(uri, Category.class);
+		ResponseEntity<Category> responseEntity = RestTemplateFactory.getRestTemplateNoProfile().getForEntity(uri, Category.class);
 		assertThat(responseEntity).isNotNull();
 		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		

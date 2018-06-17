@@ -12,7 +12,6 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -29,15 +28,13 @@ public class ProductTest {
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/products";
 
-	private RestTemplate restProduct = RestTemplateFactory.getRestTemplate();
-
 	@BeforeClass
 	public void beforeClass() {
 	}
 
 	@Test(dataProvider="fetchingProductsProvider")
 	public void fetchingProducts(String productName, String categoryIds, Integer numberOfProductsExpected) {
-		ResponseEntity<PagedResources<ProductDTO>> responseEntity = restProduct.exchange(
+		ResponseEntity<PagedResources<ProductDTO>> responseEntity = RestTemplateFactory.getRestTemplateNoProfile().exchange(
 				BASE_PATH
 				+ "/?"
 				+ "productName="+productName
@@ -53,6 +50,19 @@ public class ProductTest {
 		log.info("Paging products in database: " + collectionDTO);
 		
 		assertThat(collectionDTO).hasSize(numberOfProductsExpected);
+	}
+	
+	@Test
+	public void testingAccessControlToEndpoints() {
+		// GET - by ID
+		RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH+"/1", Object.class);
+		RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(BASE_PATH+"/1", Object.class);
+		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(BASE_PATH+"/1", Object.class);
+
+		// GET - All
+		RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH, Object.class);
+		RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(BASE_PATH, Object.class);
+		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(BASE_PATH, Object.class);
 	}
 	
 	@DataProvider
