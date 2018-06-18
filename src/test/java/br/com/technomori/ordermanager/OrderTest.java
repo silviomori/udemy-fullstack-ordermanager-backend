@@ -3,11 +3,15 @@ package br.com.technomori.ordermanager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.logging.Logger;
 
 import org.assertj.core.api.Fail;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
@@ -51,24 +55,15 @@ public class OrderTest {
 	
 	@Test
 	public void testingAccessControlToEndpoints() {
-		// GET - by ID
-		try {
-			RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH+"/1", Object.class);
-			
-			Fail.fail("Access should be forbidden");
-		} catch( HttpClientErrorException e) {
-			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-		}
-		RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(BASE_PATH+"/1", Object.class);
-		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(BASE_PATH+"/1", Object.class);
-
 		// POST
+		URI uriInsertedOrder_1 = null;
 		InsertOrderDTO insertOrderDTO_1 = InsertOrderDTO.builder()
 				.customerId(1)
 				.customerAddressId(1)
 				.paymentType(TicketPayment.IDENTIFIER)
 				.orderItem(InsertOrderItemDTO.builder().productId(1).quantity(1).build())
 				.build();
+
 		try {
 			RestTemplateFactory.getRestTemplateNoProfile().postForLocation(BASE_PATH, insertOrderDTO_1);
 			
@@ -78,16 +73,82 @@ public class OrderTest {
 		}
 
 		RestTemplateFactory.getRestTemplateCustomerProfile().postForLocation(BASE_PATH, insertOrderDTO_1);
+		uriInsertedOrder_1 = RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, insertOrderDTO_1);
+
+		URI uriInsertedOrder_2 = null;
 		InsertOrderDTO insertOrderDTO_2 = InsertOrderDTO.builder()
-				.customerId(1)
+				.customerId(2)
 				.customerAddressId(1)
 				.paymentType(TicketPayment.IDENTIFIER)
 				.orderItem(InsertOrderItemDTO.builder().productId(1).quantity(1).build())
 				.build();
-		RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, insertOrderDTO_2);
+
+		try {
+			RestTemplateFactory.getRestTemplateCustomerProfile().postForLocation(BASE_PATH, insertOrderDTO_2);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		
+		uriInsertedOrder_2 = RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, insertOrderDTO_2);
+
+	
+		// GET - by ID
+		try {
+			RestTemplateFactory.getRestTemplateNoProfile().getForEntity(uriInsertedOrder_1, Object.class);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+
+		RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(uriInsertedOrder_1, Object.class);
+		
+		try {
+			RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(uriInsertedOrder_2, Object.class);
+				
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+
+		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(uriInsertedOrder_1, Object.class);
+		RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(uriInsertedOrder_2, Object.class);
+
 	}
 	
-	
+	@Test
+	public void fetchOrdersByCustomer() {
+		
+		try {
+			RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH+"/paging", Object.class);
+
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+
+
+		/*
+		 * For now, I am just testing one page.
+		 * TODO: Make a test to all pages
+		 * TODO: Make tests to all RequestParam
+		 */
+		//do {
+			ResponseEntity<PagedResources<Order>> responseEntity =
+					RestTemplateFactory.getRestTemplateCustomerProfile().exchange(BASE_PATH+"/paging?pageNumber=0&linerPerPage=5",
+	                HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<Order>>() {});
+			
+			assertThat(responseEntity).isNotNull();
+			assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+			
+			Collection<Order> ordersList = responseEntity.getBody().getContent();
+			log.info("Paging orders in database: "+ordersList);
+		//} while( ** has more pages ** );
+
+	}
+
 	@DataProvider
 	private InsertOrderDTO[] creatingOrderProvider() {
 		return new InsertOrderDTO[] {

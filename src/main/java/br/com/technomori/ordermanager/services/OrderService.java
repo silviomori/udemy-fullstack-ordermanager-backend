@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +21,15 @@ import br.com.technomori.ordermanager.domain.Payment;
 import br.com.technomori.ordermanager.domain.Product;
 import br.com.technomori.ordermanager.domain.TicketPayment;
 import br.com.technomori.ordermanager.domain.enums.PaymentStatus;
+import br.com.technomori.ordermanager.domain.enums.UserProfile;
 import br.com.technomori.ordermanager.dto.InsertOrderDTO;
 import br.com.technomori.ordermanager.repositories.OrderRepository;
+import br.com.technomori.ordermanager.security.UserSpringSecurity;
+import br.com.technomori.ordermanager.services.exceptions.AuthorizationException;
 import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundException;
 
 @Service
+
 public class OrderService {
 
 	@Autowired
@@ -47,9 +54,32 @@ public class OrderService {
 
 		Optional<Order> ret = repository.findById(id);
 
-		return ret.orElseThrow(
+		Order order = ret.orElseThrow(
 				() -> new ObjectNotFoundException("Object not found: TYPE: " + Order.class.getName() + ", ID: " + id));
+		
+		UserSpringSecurity authenticatedUser = UserService.authenticated();
+		if( (authenticatedUser == null) || 
+			(!authenticatedUser.getId().equals(order.getCustomer().getId()) && !authenticatedUser.hasRole(UserProfile.ADMIN)) ) {
 
+			throw new AuthorizationException("Access Denied");
+		}
+
+		return order;
+
+	}
+
+	public Page<Order> pagingAllByUser(Integer pageNumber, Integer linesPerPage, String direction, String ... orderBy) {
+		UserSpringSecurity authenticatedUser = UserService.authenticated();
+		if( (authenticatedUser == null) ) {
+			throw new AuthorizationException("Access Denied");
+		}
+		
+		Customer customer = customerService.fetch(authenticatedUser.getId());
+
+		PageRequest pageRequest = PageRequest.of(pageNumber, linesPerPage, Direction.valueOf(direction), orderBy);
+		Page<Order> orderPage = repository.findByCustomer(customer, pageRequest);
+		
+		return orderPage;
 	}
 
 	@Transactional
