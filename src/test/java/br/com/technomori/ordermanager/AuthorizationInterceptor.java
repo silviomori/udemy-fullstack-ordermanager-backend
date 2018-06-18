@@ -13,16 +13,23 @@ public class AuthorizationInterceptor implements ClientHttpRequestInterceptor {
 	
 	private List<String> authToken;
 
-	public AuthorizationInterceptor(List<String> authToken) {
-		this.authToken = authToken;
-	}
-
 	@Override
 	public ClientHttpResponse intercept(HttpRequest request, byte[] body,
 			ClientHttpRequestExecution execution) throws IOException {
 
-		request.getHeaders().addAll("Authorization",authToken);
-		
+		if( "/login".equals(request.getURI().getPath()) ) {
+			ClientHttpResponse clientHttpResponse = execution.execute(request, body);
+
+			authToken = clientHttpResponse.getHeaders().get("Authorization");
+			
+			return clientHttpResponse;
+		}
+
+		if( authToken != null && !authToken.isEmpty() ) {
+			request.getHeaders().addAll("Authorization", authToken);
+			return execution.execute(request, body);
+		}
+
 		return execution.execute(request, body);
 	}
 

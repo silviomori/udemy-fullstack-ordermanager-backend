@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -26,6 +27,7 @@ import org.testng.annotations.Test;
 import br.com.technomori.ordermanager.domain.Customer;
 import br.com.technomori.ordermanager.domain.enums.CustomerType;
 import br.com.technomori.ordermanager.domain.enums.UserProfile;
+import br.com.technomori.ordermanager.dto.CredentialsDTO;
 import br.com.technomori.ordermanager.dto.CustomerDTO;
 import br.com.technomori.ordermanager.dto.InsertAddressDTO;
 import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
@@ -59,12 +61,15 @@ public class CustomerTest {
 	}
 	
 	public URI creatingCustomer(InsertCustomerDTO dto) {
+		RestTemplate restTemplate = RestTemplateFactory.getRestTemplate();
 
-		URI responseUri = RestTemplateFactory.getRestTemplateNoProfile().postForLocation(BASE_PATH, dto);
+		URI uriResponse = restTemplate.postForLocation(BASE_PATH, dto);
 
-		assertThat(responseUri).isNotNull();
+		assertThat(uriResponse).isNotNull();
 
-		Customer responseCustomer = fetchCustomer(responseUri);
+		doLogin(dto, restTemplate);
+		
+		Customer responseCustomer = fetchCustomer(uriResponse, restTemplate);
 
 		assertThat(responseCustomer).isNotNull();
 		assertThat(responseCustomer.getCustomerType()).isEqualTo(dto.getCustomerType());
@@ -84,7 +89,15 @@ public class CustomerTest {
 
 		log.info("Created customer: " + responseCustomer);
 	
-		return responseUri;
+		return uriResponse;
+	}
+
+	private void doLogin(InsertCustomerDTO dto, RestTemplate restTemplate) {
+		CredentialsDTO credentials = CredentialsDTO.builder()
+				.email(dto.getEmail())
+				.password(dto.getPassword())
+				.build();
+		restTemplate.postForEntity(TestSuite.SERVER_ADDRESS+"/login", credentials, Void.class);
 	}
 
 	@Test(dependsOnMethods = "creatingCustomerTest")
@@ -99,15 +112,16 @@ public class CustomerTest {
 
 	@Test(dependsOnMethods = "fetchAll", dataProvider = "customerProvider")
 	public void updatingCustomer(Customer customer) {
+		RestTemplate restTemplate = RestTemplateFactory.getRestTemplateAdminProfile();
 		URI uri = URI.create(BASE_PATH + "/" + customer.getId());
-		customer = fetchCustomer(uri);
+		customer = fetchCustomer(uri,restTemplate);
 		customer.setName("[U] " + customer.getName());
 		customer.setEmail("u" + customer.getEmail());
 
 		CustomerDTO dto = new CustomerDTO(customer);
-		RestTemplateFactory.getRestTemplateCustomerProfile().put(uri, dto);
+		restTemplate.put(uri, dto);
 
-		Customer updatedCustomer = fetchCustomer(uri);
+		Customer updatedCustomer = fetchCustomer(uri,restTemplate);
 		assertThat(updatedCustomer).isEqualToComparingOnlyGivenFields(customer, "id", "name", "email",
 				"documentNumber");
 
@@ -131,7 +145,7 @@ public class CustomerTest {
 		}
 
 		try { // try to find the deleted customer in database
-			RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(uri, Customer.class);
+			RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(uri, Customer.class);
 		} catch (HttpClientErrorException ex) { // Customer has just been deleted
 			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 			log.info("Deleted customer: " + customer);
@@ -160,7 +174,7 @@ public class CustomerTest {
 	@Test(dependsOnMethods = "deletingNotAllowed")
 	public void pagingResults() {
 		 // adding a lot of customers to perform the paging test
-		 List<URI> addedCustomerUriList = new ArrayList();
+		 List<URI> addedCustomerUriList = new ArrayList<URI>();
 		 for(int i = 1; i < 10; ++i) {
 			 URI responseUri = RestTemplateFactory.getRestTemplateNoProfile().postForLocation(
 				 BASE_PATH,
@@ -367,17 +381,21 @@ public class CustomerTest {
 
 		// Customer must be created successfully
 		URI responseURI = creatingCustomer(dto);
+
 		
-		Customer customer = fetchCustomer(responseURI);
+		RestTemplate restTemplate = RestTemplateFactory.getRestTemplate();
+		doLogin(dto, restTemplate);
+		
+		Customer customer = fetchCustomer(responseURI, restTemplate);
 		String updatedName = "[U] " + customer.getName();
 		String uniqueEmail = customer.getEmail();
 		
 		customer.setName(updatedName);
 		// !! DO NOT change email
-		RestTemplateFactory.getRestTemplateCustomerProfile().put(responseURI, customer);
+		restTemplate.put(responseURI, customer);
 
 		// Verifying that customer was really updated
-		customer = fetchCustomer(responseURI);
+		customer = fetchCustomer(responseURI, restTemplate);
 		assertThat(customer.getName()).isEqualTo(updatedName);
 
 		// Inserting a new customer, with all different data
@@ -385,11 +403,12 @@ public class CustomerTest {
 		responseURI = creatingCustomer(dto);
 
 		// Updating the new customer with an already used email
-		customer = fetchCustomer(responseURI);
+		doLogin(dto, restTemplate);
+		customer = fetchCustomer(responseURI, restTemplate);
 		customer.setEmail(uniqueEmail);
 		
 		try {
-			RestTemplateFactory.getRestTemplateCustomerProfile().put(responseURI, customer);
+			restTemplate.put(responseURI, customer);
 			Fail.fail("Different customers should not have the same email");
 		} catch( HttpClientErrorException e ) {
 			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -434,7 +453,7 @@ public class CustomerTest {
 	@Test
 	public void validatingAddressOnInsert() {
 		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
-		dto.setAddresses(new ArrayList());
+		dto.setAddresses(new ArrayList<InsertAddressDTO>());
 		try {
 			creatingCustomer(dto); // must throw an exception
 			Fail.fail("Customer with empty address list should not be inserted in database.");
@@ -493,7 +512,7 @@ public class CustomerTest {
 	@Test
 	public void validatingPhoneNotNullOnInsert() {
 		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
-		dto.setPhoneNumbers(new HashSet());
+		dto.setPhoneNumbers(new HashSet<String>());
 
 		try {
 			creatingCustomer(dto); // must throw an exception
@@ -524,6 +543,7 @@ public class CustomerTest {
 	
 	@Test
 	public void testingAccessControlToEndpoints() {
+		
 		// GET - by ID
 		try {
 			RestTemplateFactory.getRestTemplateNoProfile().getForEntity(BASE_PATH+"/1", Object.class);
@@ -571,59 +591,106 @@ public class CustomerTest {
 
 
 		// POST
-		InsertCustomerDTO insertCustomerDTO = getGenericCustomerToInsert(997);
-		URI uriInsertedCustomer_1 = RestTemplateFactory.getRestTemplateNoProfile().postForLocation(BASE_PATH, insertCustomerDTO);
-		insertCustomerDTO = getGenericCustomerToInsert(998);
-		URI uriInsertedCustomer_2 = RestTemplateFactory.getRestTemplateCustomerProfile().postForLocation(BASE_PATH, insertCustomerDTO);
-		insertCustomerDTO = getGenericCustomerToInsert(999);
-		URI uriInsertedCustomer_3 = RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, insertCustomerDTO);
+		InsertCustomerDTO insertCustomerDTO_1 = getGenericCustomerToInsert(997);
+		URI uriInsertedCustomer_1 = RestTemplateFactory.getRestTemplateNoProfile().postForLocation(BASE_PATH, insertCustomerDTO_1);
+		InsertCustomerDTO insertCustomerDTO_2 = getGenericCustomerToInsert(998);
+		URI uriInsertedCustomer_2 = RestTemplateFactory.getRestTemplateCustomerProfile().postForLocation(BASE_PATH, insertCustomerDTO_2);
+		InsertCustomerDTO insertCustomerDTO_3 = getGenericCustomerToInsert(999);
+		URI uriInsertedCustomer_3 = RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, insertCustomerDTO_3);
 		
 		
 		// PUT
-		Customer insertedCustomer_1 = RestTemplateFactory
-				.getRestTemplateCustomerProfile().getForEntity(uriInsertedCustomer_1, Customer.class)
+		RestTemplate restTemplate = RestTemplateFactory.getRestTemplate();
+		doLogin(insertCustomerDTO_3, restTemplate);
+
+		Customer insertedCustomer_3 = restTemplate
+				.getForEntity(uriInsertedCustomer_3, Customer.class)
 				.getBody();
-		CustomerDTO customerDTO = new CustomerDTO(insertedCustomer_1);
-		customerDTO.setName(customerDTO.getName()+" - updated");
+		CustomerDTO customerDTO = new CustomerDTO(insertedCustomer_3);
+		customerDTO.setName(insertedCustomer_3.getName()+" - updated");
+		
 		try {
-			RestTemplateFactory.getRestTemplateNoProfile().put(uriInsertedCustomer_1, customerDTO);
+			RestTemplateFactory.getRestTemplateNoProfile().put(uriInsertedCustomer_3, customerDTO);
 			
 			Fail.fail("Access should be forbidden");
 		} catch( HttpClientErrorException e) {
 			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 		}
-		RestTemplateFactory.getRestTemplateCustomerProfile().put(uriInsertedCustomer_1, customerDTO);
-		RestTemplateFactory.getRestTemplateAdminProfile().put(uriInsertedCustomer_1, customerDTO);
+		
+		try {
+			RestTemplateFactory.getRestTemplateCustomerProfile().put(uriInsertedCustomer_3, customerDTO);
+
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+		
+		restTemplate.put(uriInsertedCustomer_3, customerDTO);
+
+		customerDTO.setName(insertedCustomer_3.getName()+" - updated 2");
+		RestTemplateFactory.getRestTemplateAdminProfile().put(uriInsertedCustomer_3, customerDTO);
 
 		
 		// DELETE
 		try {
-			RestTemplateFactory.getRestTemplateNoProfile().delete(uriInsertedCustomer_1);
+			RestTemplateFactory.getRestTemplateNoProfile().delete(uriInsertedCustomer_3);
 			
 			Fail.fail("Access should be forbidden");
 		} catch( HttpClientErrorException e) {
 			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 		}
+		
 		try {
-			RestTemplateFactory.getRestTemplateCustomerProfile().delete(uriInsertedCustomer_1);
+			RestTemplateFactory.getRestTemplateCustomerProfile().delete(uriInsertedCustomer_3);
 			
 			Fail.fail("Access should be forbidden");
 		} catch( HttpClientErrorException e) {
 			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 		}
+		
+		try {
+			restTemplate.delete(uriInsertedCustomer_3);
+			
+			Fail.fail("Access should be forbidden");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}		
+		
 		RestTemplateFactory.getRestTemplateAdminProfile().delete(uriInsertedCustomer_1);
 		RestTemplateFactory.getRestTemplateAdminProfile().delete(uriInsertedCustomer_2);
 		RestTemplateFactory.getRestTemplateAdminProfile().delete(uriInsertedCustomer_3);
 	}
 
+	@Test
+	public void fetchingDistinctUser_Forbidden() {
+		RestTemplate restTemplate = RestTemplateFactory.getRestTemplateCustomerProfile();
+		try {
+			fetchCustomer(URI.create(BASE_PATH+"/2"), restTemplate);
+			
+			Fail.fail("Customer should not be allowed to fetch a distinct user.");
+		} catch( HttpClientErrorException e ) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		}
+	}
+
+	@Test
+	public void fetchingSameUser() {
+		RestTemplate restTemplate = RestTemplateFactory.getRestTemplateCustomerProfile();
+		fetchCustomer(URI.create(BASE_PATH+"/1"), restTemplate);
+	}
+
+	@Test
+	public void fetchingDistinctUser_byAdminUser() {
+		fetchCustomer(URI.create(BASE_PATH+"/1"), RestTemplateFactory.getRestTemplateAdminProfile());
+	}
 
 	private Customer fetchCustomer(Integer customerId) {
 		URI uri = URI.create(BASE_PATH+"/"+customerId);
-		return fetchCustomer(uri);
+		return fetchCustomer(uri,RestTemplateFactory.getRestTemplateAdminProfile());
 	}
 
-	private Customer fetchCustomer(URI uri) {
-		ResponseEntity<Customer> responseEntity = RestTemplateFactory.getRestTemplateCustomerProfile().getForEntity(uri, Customer.class);
+	private Customer fetchCustomer(URI uri, RestTemplate restTemplate) {
+		ResponseEntity<Customer> responseEntity = restTemplate.getForEntity(uri, Customer.class);
 		assertThat(responseEntity).isNotNull();
 		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 

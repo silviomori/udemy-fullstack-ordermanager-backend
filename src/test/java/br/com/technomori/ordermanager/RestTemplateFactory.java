@@ -19,7 +19,7 @@ public class RestTemplateFactory {
 
 	static {
 		// Initializing RestTemplate with Customer profile
-		restTemplateCustomer = new RestTemplate();
+		restTemplateCustomer = getRestTemplate();
 
 		CredentialsDTO credentials = CredentialsDTO.builder()
 				.email("silviomori@gmail.com")
@@ -27,13 +27,10 @@ public class RestTemplateFactory {
 				.build();
 		
 		ResponseEntity<Void> responseEntity = restTemplateCustomer.postForEntity(TestSuite.SERVER_ADDRESS+"/login", credentials, Void.class);
-		List<String> authToken = responseEntity.getHeaders().get("Authorization");
-
-		restTemplateCustomer.getInterceptors().add( new AuthorizationInterceptor(authToken) );
         
 
 		// Initializing RestTemplate with Admin profile
-		restTemplateAdmin = new RestTemplate();
+		restTemplateAdmin = getRestTemplate();
 
 		credentials = CredentialsDTO.builder()
 				.email("technomorisistemas@gmail.com")
@@ -41,9 +38,6 @@ public class RestTemplateFactory {
 				.build();
 		
 		responseEntity = restTemplateAdmin.postForEntity(TestSuite.SERVER_ADDRESS+"/login", credentials, Void.class);
-		authToken = responseEntity.getHeaders().get("Authorization");
-
-		restTemplateAdmin.getInterceptors().add( new AuthorizationInterceptor(authToken) );
 
 		// Initializing RestTemplate with No profile
 		restTemplate = new RestTemplate();
@@ -60,4 +54,11 @@ public class RestTemplateFactory {
     public static RestTemplate getRestTemplateNoProfile() {
         return restTemplate;
     }
+    
+    public static RestTemplate getRestTemplate() {
+    	RestTemplate restTemplate = new RestTemplate();
+    	restTemplate.getInterceptors().add( new AuthorizationInterceptor() );
+    	return restTemplate;
+    }
+
 }

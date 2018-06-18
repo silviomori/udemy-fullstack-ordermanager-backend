@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import br.com.technomori.ordermanager.services.exceptions.AuthorizationException;
 import br.com.technomori.ordermanager.services.exceptions.DataIntegrityException;
 import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundException;
 
@@ -60,5 +61,18 @@ public class ResourceHandlerException {
 			
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 	}
+	
+	@ExceptionHandler(AuthorizationException.class)
+	public ResponseEntity<StandardError> authorizationException(AuthorizationException e, HttpServletRequest request) {
+		
+		StandardError error = StandardError.builder()
+				.httpStatus(HttpStatus.FORBIDDEN.value())
+				.message(e.getMessage())
+				.timestamp(System.currentTimeMillis())
+				.build();
+		
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+	}
+
 
 }

@@ -21,6 +21,8 @@ import br.com.technomori.ordermanager.dto.CustomerDTO;
 import br.com.technomori.ordermanager.dto.InsertAddressDTO;
 import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
 import br.com.technomori.ordermanager.repositories.CustomerRepository;
+import br.com.technomori.ordermanager.security.UserSpringSecurity;
+import br.com.technomori.ordermanager.services.exceptions.AuthorizationException;
 import br.com.technomori.ordermanager.services.exceptions.DataIntegrityException;
 import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundException;
 
@@ -33,7 +35,12 @@ public class CustomerService {
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 	
-	public Customer fetch(Integer id) throws ObjectNotFoundException {
+	public Customer fetch(Integer id) throws ObjectNotFoundException, AuthorizationException {
+		UserSpringSecurity authenticatedUser = UserService.authenticated();
+		if( (authenticatedUser == null) || 
+			(!authenticatedUser.getId().equals(id) && !authenticatedUser.hasRole(UserProfile.ADMIN)) ) {
+			throw new AuthorizationException("Access Denied");
+		}
 		
 		Optional<Customer> ret = repository.findById(id);
 
