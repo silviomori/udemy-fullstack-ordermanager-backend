@@ -1,7 +1,5 @@
 package br.com.technomori.ordermanager;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 

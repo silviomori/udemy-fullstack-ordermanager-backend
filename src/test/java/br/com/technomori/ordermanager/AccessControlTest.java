@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.testng.annotations.Test;
 
 import br.com.technomori.ordermanager.domain.Category;
@@ -50,7 +51,7 @@ public class AccessControlTest {
 				.password("123")
 				.build();
 		
-		ResponseEntity<Void> responseEntity = RestTemplateFactory.getRestTemplateNoProfile().postForEntity(BASE_PATH, credentialsDTO, Void.class);
+		ResponseEntity<Void> responseEntity = RestTemplateFactory.getRestTemplate().postForEntity(BASE_PATH, credentialsDTO, Void.class);
 
 		assertThat(responseEntity).isNotNull();
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -106,7 +107,7 @@ public class AccessControlTest {
 				.password("123")
 				.build();
 		
-		ResponseEntity<Void> responseAuthorization = RestTemplateFactory.getRestTemplateNoProfile().postForEntity(BASE_PATH, credentialsDTO, Void.class);
+		ResponseEntity<Void> responseAuthorization = RestTemplateFactory.getRestTemplate().postForEntity(BASE_PATH, credentialsDTO, Void.class);
 		assertThat(responseAuthorization).isNotNull();
 		assertThat(responseAuthorization.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -130,6 +131,28 @@ public class AccessControlTest {
 		} catch( HttpClientErrorException e ) {
 			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 		}
+	}
+	
+	public void refreshToken() throws InterruptedException {
+		RestTemplate restTemplate = RestTemplateFactory.getRestTemplate();
+		CredentialsDTO credentialsDTO = CredentialsDTO.builder()
+				.email("silviomori@gmail.com")
+				.password("123")
+				.build();
+		ResponseEntity<Void> responseEntity = restTemplate.postForEntity(BASE_PATH, credentialsDTO, Void.class);
+
+		String token = responseEntity.getHeaders().get("Authorization").get(0);
+		assertThat(token).isNotNull();
+		
+		Thread.currentThread().sleep(1000);
+		
+		responseEntity = restTemplate.postForEntity(TestSuite.SERVER_ADDRESS+"/auth/refresh_token", null, Void.class);
+
+		String refreshedToken = responseEntity.getHeaders().get("Authorization").get(0);
+		
+		assertThat(refreshedToken)
+			.isNotNull()
+			.isNotEqualTo(token);
 	}
 	
 }
