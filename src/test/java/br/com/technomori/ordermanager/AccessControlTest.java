@@ -19,6 +19,7 @@ import org.testng.annotations.Test;
 
 import br.com.technomori.ordermanager.domain.Category;
 import br.com.technomori.ordermanager.dto.CredentialsDTO;
+import br.com.technomori.ordermanager.dto.EmailDTO;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
 @Test(groups = "AccessControlTest")
@@ -154,5 +155,26 @@ public class AccessControlTest {
 			.isNotNull()
 			.isNotEqualTo(token);
 	}
+
 	
+	public void forgottenPassword_EmailNotFound() {
+		try {
+			RestTemplateFactory.getRestTemplate().postForEntity(
+					TestSuite.SERVER_ADDRESS+"/auth/forgotten",
+					new EmailDTO("fdhaief@ddfsisk.com"),
+					Void.class);
+
+			Fail.fail("Invalid email should not return a new password.");
+		} catch( HttpClientErrorException e) {
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	public void forgottenPassword_validEmail() {
+		RestTemplateFactory.getRestTemplate().postForEntity(
+				TestSuite.SERVER_ADDRESS+"/auth/forgotten",
+				new EmailDTO("technomorisistemas@gmail.com"),
+				Void.class);
+	}
+
 }
