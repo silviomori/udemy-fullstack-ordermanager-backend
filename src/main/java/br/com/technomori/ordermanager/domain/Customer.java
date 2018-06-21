@@ -45,6 +45,8 @@ public class Customer {
 	private String password;
 	private String documentNumber;
 
+	private String pictureProfileUri;
+	
 	//TODO save ID to database
 	private CustomerType customerType;
 	
@@ -66,4 +68,5 @@ public class Customer {
 	@CollectionTable(name="USER_PROFILE")
 	@Singular
 	private Set<UserProfile> userProfiles;
+
 }
