@@ -1,5 +1,6 @@
 package br.com.technomori.ordermanager.services;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.technomori.ordermanager.domain.Address;
 import br.com.technomori.ordermanager.domain.City;
@@ -34,6 +36,9 @@ public class CustomerService {
 	
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private S3Service s3Service;
 	
 	public Customer fetch(Integer id) throws ObjectNotFoundException, AuthorizationException {
 		UserSpringSecurity authenticatedUser = UserService.authenticated();
@@ -135,6 +140,10 @@ public class CustomerService {
 		}
 		
 		return customer;
+	}
+	
+	public URI uploadProfilePicture(MultipartFile multipartFile) {
+		return s3Service.uploadFile(multipartFile);
 	}
 
 }

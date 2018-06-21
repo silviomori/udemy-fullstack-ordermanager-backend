@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.com.technomori.ordermanager.domain.Customer;
@@ -65,6 +66,15 @@ public class CustomerResource {
 		return ResponseEntity.created(uriResponse).build();
 	}
 	
+
+	@RequestMapping(value="/picture", method=RequestMethod.POST)
+	public ResponseEntity<Void> uploadProfilePicture(@Valid @RequestBody MultipartFile file) {
+		// Constraints in a @Valid object must be accessed in this method, otherwise they will not be validated
+		URI uri = service.uploadProfilePicture(file);
+		return ResponseEntity.created(uri).build();
+	}
+	
+
 	@RequestMapping(method=RequestMethod.PUT, value="/{id}")
 	public ResponseEntity<Void> update(@PathVariable Integer id, @Valid @RequestBody CustomerDTO customerDTO) {
 		// Constraints in a @Valid object must be accessed in this method, otherwise they will not be validated

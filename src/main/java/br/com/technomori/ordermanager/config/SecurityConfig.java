@@ -48,7 +48,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	};
 
 	public static final String[] PUBLIC_MATCHERS_POST = {
-			"/customers/**",
+			"/customers",
+			"/customers/picture", // public access only for testing purpose
 			"/auth/forgotten**"
 	};
 	
