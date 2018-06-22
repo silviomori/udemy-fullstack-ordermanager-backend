@@ -1,11 +1,13 @@
 package br.com.technomori.ordermanager.services;
 
+import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +41,12 @@ public class CustomerService {
 	
 	@Autowired
 	private S3Service s3Service;
+	
+	@Autowired
+	private ImageService imageService;
+	
+	@Value("${img.customer.profile.prefix}")
+	private String imgProfilePrefix;
 	
 	public Customer fetch(Integer id) throws ObjectNotFoundException, AuthorizationException {
 		UserSpringSecurity authenticatedUser = UserService.authenticated();
@@ -147,15 +155,17 @@ public class CustomerService {
 		if( (authenticatedUser == null) ) { 
 			throw new AuthorizationException("Access Denied");
 		}
-		
-		URI uri = s3Service.uploadFile(multipartFile);
-		
-		Customer customer = repository.findById(authenticatedUser.getId())
-				.orElse(null);
-		customer.setPictureProfileUri(uri.toString());
-		repository.save(customer);
 
-		return uri;
+		BufferedImage jpgBufferedImage = imageService.getJpgImageFromFile(multipartFile);
+		
+		String fileName = imgProfilePrefix + authenticatedUser.getId() +".jpg";
+		
+		return s3Service.uploadFile(
+				imageService.getInputStrem( jpgBufferedImage, "jpg" ),
+				fileName,
+				"image");
 	}
+	
+	
 
 }
