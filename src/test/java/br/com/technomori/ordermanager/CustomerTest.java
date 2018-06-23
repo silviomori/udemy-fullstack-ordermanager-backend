@@ -230,7 +230,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with an empty name should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 
@@ -240,7 +240,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with a short name should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 
@@ -263,7 +263,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with a too long name should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 	}
@@ -278,7 +278,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer should not be updated with an empty name.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 
@@ -290,7 +290,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer should not be updated with a short name.");
 		} catch ( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 
@@ -315,7 +315,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer should not be updated with a too long name.");
 		} catch ( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 	}
@@ -330,7 +330,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with an empty email address should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 
@@ -340,7 +340,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with a invalid email address format should not be inserted in database.");
 		} catch ( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 	}
@@ -357,7 +357,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with non unique email address should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 	}
@@ -372,7 +372,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with an empty email address should not be updated in database.");
 		} catch ( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 
@@ -384,7 +384,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with a invalid email address format should not be updated in database.");
 		} catch ( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 	}
@@ -426,7 +426,7 @@ public class CustomerTest {
 			restTemplate.put(responseURI, customer);
 			Fail.fail("Different customers should not have the same email");
 		} catch( HttpClientErrorException e ) {
-			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(e.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info("Exception caught as expected. "+e.getMessage());
 		}
 	}
@@ -442,7 +442,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with no valid CPF should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}
@@ -459,7 +459,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with no valid CNPJ should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}
@@ -473,7 +473,7 @@ public class CustomerTest {
 			creatingCustomer(dto); // must throw an exception
 			Fail.fail("Customer with empty address list should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}
@@ -484,7 +484,7 @@ public class CustomerTest {
 			creatingCustomer(dto); // must throw an exception
 			Fail.fail("Address with empty street name should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}
@@ -495,7 +495,7 @@ public class CustomerTest {
 			creatingCustomer(dto); // must throw an exception
 			Fail.fail("Address with no number should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}
@@ -506,7 +506,7 @@ public class CustomerTest {
 			creatingCustomer(dto); // must throw an exception
 			Fail.fail("Customer with empty zip code should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}
@@ -517,7 +517,7 @@ public class CustomerTest {
 			creatingCustomer(dto); // must throw an exception
 			Fail.fail("Customer with no city id defined should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}
@@ -534,7 +534,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with empty phone set should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}
@@ -550,7 +550,7 @@ public class CustomerTest {
 
 			Fail.fail("Customer with empty customer type should not be inserted in database.");
 		} catch (HttpClientErrorException ex) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 			return;
 		}

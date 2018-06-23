@@ -164,7 +164,7 @@ public class CategoryTest {
 			
 			Fail.fail("Category with an empty name should not be inserted in database.");
 		} catch( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 		
@@ -174,7 +174,7 @@ public class CategoryTest {
 			
 			Fail.fail("Category with a short name should not be inserted in database.");
 		} catch( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 		
@@ -194,7 +194,7 @@ public class CategoryTest {
 
 			Fail.fail("Category with a too long name should not be inserted in database.");
 		} catch( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}		
 	}
@@ -209,7 +209,7 @@ public class CategoryTest {
 
 			Fail.fail("Category should not be updated with an empty name.");
 		} catch( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 		
@@ -221,7 +221,7 @@ public class CategoryTest {
 			
 			Fail.fail("Category should not be updated with a short name.");
 		} catch( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}
 		
@@ -243,7 +243,7 @@ public class CategoryTest {
 			
 			Fail.fail("Category should not be updated with a too long name.");
 		} catch( HttpClientErrorException ex ) {
-			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+			assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 			log.info(ex.getMessage());
 		}		
 	}

@@ -14,8 +14,10 @@ import lombok.Setter;
 @Builder
 public class StandardError {
 
-	private Integer httpStatus;
-	private String message;
 	private Long timestamp;
+	private Integer status;
+	private String error;
+	private String message;
+	private String path;
 
 }

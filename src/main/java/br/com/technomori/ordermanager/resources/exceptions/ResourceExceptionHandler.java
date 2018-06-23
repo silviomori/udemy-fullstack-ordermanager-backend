@@ -19,15 +19,17 @@ import br.com.technomori.ordermanager.services.exceptions.FileException;
 import br.com.technomori.ordermanager.services.exceptions.ObjectNotFoundException;
 
 @ControllerAdvice
-public class ResourceHandlerException {
+public class ResourceExceptionHandler {
 
 	@ExceptionHandler(ObjectNotFoundException.class)
 	public ResponseEntity<StandardError> objectNotFoundException(ObjectNotFoundException e, HttpServletRequest request) {
 		
 		StandardError error = StandardError.builder()
-				.httpStatus(HttpStatus.NOT_FOUND.value())
-				.message(e.getMessage())
 				.timestamp(System.currentTimeMillis())
+				.status(HttpStatus.NOT_FOUND.value())
+				.error(HttpStatus.NOT_FOUND.getReasonPhrase())
+				.message(e.getMessage())
+				.path(request.getRequestURI())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
@@ -38,9 +40,11 @@ public class ResourceHandlerException {
 	public ResponseEntity<StandardError> dataIntegrity(DataIntegrityException e, HttpServletRequest request) {
 		
 		StandardError error = StandardError.builder()
-				.httpStatus(HttpStatus.BAD_REQUEST.value())
-				.message(e.getMessage())
 				.timestamp(System.currentTimeMillis())
+				.status(HttpStatus.BAD_REQUEST.value())
+				.error("Data Integrity")
+				.message(e.getMessage())
+				.path(request.getRequestURI())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
@@ -50,13 +54,14 @@ public class ResourceHandlerException {
 	public ResponseEntity<StandardError> MethodArgumentNotValid(MethodArgumentNotValidException e, HttpServletRequest request) {
 
 		ValidationError error = ValidationError.VEBuilder()
-				.httpStatus(HttpStatus.BAD_REQUEST.value())
-				.message("Validation Error")
 				.timestamp(System.currentTimeMillis())
+				.status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+				.error("Validation Error")
+				.message(e.getMessage())
 				.build();
 		
 		for( FieldError fe : e.getBindingResult().getFieldErrors()) {
-			error.setError( 
+			error.addFieldMessage( 
 					FieldMessage.builder()
 						.fieldName(fe.getField())
 						.message(fe.getDefaultMessage())
@@ -64,16 +69,18 @@ public class ResourceHandlerException {
 			);
 		}
 			
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
 	}
 	
 	@ExceptionHandler(AuthorizationException.class)
 	public ResponseEntity<StandardError> authorizationException(AuthorizationException e, HttpServletRequest request) {
 		
 		StandardError error = StandardError.builder()
-				.httpStatus(HttpStatus.FORBIDDEN.value())
-				.message(e.getMessage())
 				.timestamp(System.currentTimeMillis())
+				.status(HttpStatus.FORBIDDEN.value())
+				.error("Access Denied")
+				.message(e.getMessage())
+				.path(request.getRequestURI())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
@@ -83,11 +90,13 @@ public class ResourceHandlerException {
 	public ResponseEntity<StandardError> fileException(FileException e, HttpServletRequest request) {
 		
 		StandardError error = StandardError.builder()
-				.httpStatus(HttpStatus.BAD_REQUEST.value())
-				.message(e.getMessage())
 				.timestamp(System.currentTimeMillis())
+				.status(HttpStatus.BAD_REQUEST.value())
+				.error("File Error")
+				.message(e.getMessage())
+				.path(request.getRequestURI())
 				.build();
-		
+
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 	}
 
@@ -97,9 +106,11 @@ public class ResourceHandlerException {
 		HttpStatus httpErrorCode = HttpStatus.valueOf(e.getErrorCode());
 		
 		StandardError error = StandardError.builder()
-				.httpStatus(httpErrorCode.value())
-				.message(e.getMessage())
 				.timestamp(System.currentTimeMillis())
+				.status(httpErrorCode.value())
+				.error("Amazon Service Error")
+				.message(e.getMessage())
+				.path(request.getRequestURI())
 				.build();
 		
 		return ResponseEntity.status(httpErrorCode).body(error);
@@ -109,9 +120,11 @@ public class ResourceHandlerException {
 	public ResponseEntity<StandardError> amazonClientException(AmazonClientException e, HttpServletRequest request) {
 		
 		StandardError error = StandardError.builder()
-				.httpStatus(HttpStatus.BAD_REQUEST.value())
-				.message(e.getMessage())
 				.timestamp(System.currentTimeMillis())
+				.status(HttpStatus.BAD_REQUEST.value())
+				.error("Amazon Client Error")
+				.message(e.getMessage())
+				.path(request.getRequestURI())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
@@ -121,9 +134,11 @@ public class ResourceHandlerException {
 	public ResponseEntity<StandardError> amazonS3Exception(AmazonS3Exception e, HttpServletRequest request) {
 		
 		StandardError error = StandardError.builder()
-				.httpStatus(HttpStatus.BAD_REQUEST.value())
-				.message(e.getMessage())
 				.timestamp(System.currentTimeMillis())
+				.status(HttpStatus.BAD_REQUEST.value())
+				.error("Amazon S3 Error")
+				.message(e.getMessage())
+				.path(request.getRequestURI())
 				.build();
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);

@@ -12,15 +12,15 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ValidationError extends StandardError {
 
-	private List<FieldMessage> errors = new ArrayList<FieldMessage>();
+	private List<FieldMessage> fieldMessages = new ArrayList<FieldMessage>();
 
-	private ValidationError(Integer httpStatus, String message, Long timestamp, List<FieldMessage> errors) {
-		super(httpStatus,message,timestamp);
-		this.errors = errors;
+	private ValidationError(Long timestamp, Integer status, String error, String message, String path, List<FieldMessage> fieldMessages) {
+		super(timestamp, status, error, message, path);
+		this.fieldMessages = fieldMessages;
 	}
 	
-	public void setError(FieldMessage fieldMessage) {
-		errors.add(fieldMessage);
+	public void addFieldMessage(FieldMessage fieldMessage) {
+		fieldMessages.add(fieldMessage);
 	}
 	
 	public static Builder VEBuilder() {
@@ -28,8 +28,18 @@ public class ValidationError extends StandardError {
 	}
 
 	public static class Builder extends ValidationError {
-		Builder httpStatus(Integer httpStatus) {
-			setHttpStatus(httpStatus);
+		Builder timestamp(Long timestamp) {
+			setTimestamp(timestamp);
+			return this;
+		}
+
+		Builder status(Integer httpStatus) {
+			setStatus(httpStatus);
+			return this;
+		}
+
+		Builder error(String error) {
+			setError(error);
 			return this;
 		}
 
@@ -38,18 +48,18 @@ public class ValidationError extends StandardError {
 			return this;
 		}
 
-		Builder timestamp(Long timestamp) {
-			setTimestamp(timestamp);
+		Builder path(String path) {
+			setPath(path);
 			return this;
 		}
 
 		Builder fieldMessage(FieldMessage fieldMessage) {
-			setError(fieldMessage);
+			addFieldMessage(fieldMessage);
 			return this;
 		}
 
 		ValidationError build() {
-			return new ValidationError(getHttpStatus(), getMessage(), getTimestamp(), getErrors());
+			return new ValidationError(getTimestamp(), getStatus(), getError(), getMessage(), getPath(), getFieldMessages());
 		}
 	}
 }
