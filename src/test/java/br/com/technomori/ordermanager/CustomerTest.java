@@ -2,6 +2,9 @@ package br.com.technomori.ordermanager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,14 +13,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
+
 import org.assertj.core.api.Fail;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.hateoas.PagedResources;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.testng.annotations.BeforeClass;
@@ -42,6 +55,8 @@ public class CustomerTest {
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/customers";
 
 	private List<Customer> insertedCustomers = new ArrayList<Customer>();
+
+	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
 	@BeforeClass
 	public void beforeClass() {
@@ -684,6 +699,24 @@ public class CustomerTest {
 		fetchCustomer(URI.create(BASE_PATH+"/1"), RestTemplateFactory.getRestTemplateAdminProfile());
 	}
 
+
+	@Test(dataProvider = "profilePictureProvider")
+	public void savingProfilePicture(HttpEntity<LinkedMultiValueMap<String, ClassPathResource>> requestEntity) throws IOException {
+		URI pictureUri = RestTemplateFactory.getRestTemplateCustomerProfile().postForLocation(BASE_PATH+"/picture", requestEntity);
+		assertThat(pictureUri).isNotNull();
+
+		Resource resource = resourceLoader.getResource(pictureUri.toString());
+		assertThat(resource).isNotNull();
+
+		InputStream inputStream = resource.getInputStream();
+		assertThat(inputStream).isNotNull();
+
+		BufferedImage buffImg = ImageIO.read( inputStream );
+		assertThat(buffImg).isNotNull();
+		assertThat(buffImg.getHeight()).isEqualTo(200);
+		assertThat(buffImg.getWidth()).isEqualTo(200);
+	}
+
 	private Customer fetchCustomer(Integer customerId) {
 		URI uri = URI.create(BASE_PATH+"/"+customerId);
 		return fetchCustomer(uri,RestTemplateFactory.getRestTemplateAdminProfile());
@@ -754,5 +787,54 @@ public class CustomerTest {
 
 		return new InsertCustomerDTO[] { customer };
 	}
+	
+	@DataProvider
+	private HttpEntity<LinkedMultiValueMap<String, ClassPathResource>>[] profilePictureProvider() {
+		return new HttpEntity[] {
+				// imagem JPG larga com altura > 200
+				getHttpEntity("238x212.jpg"),
+				
+				// imagem JPG alta com largura > 200
+				getHttpEntity("240x320.jpg"),
+				
+				// imagem JPG larga com altura < 200
+				getHttpEntity("282x179.jpg"),
+				
+				// imagem JPG alta com largura < 200
+				getHttpEntity("183x275.jpg"),
+				
+				// imagem JPG quadrada > 200 x 200
+				getHttpEntity("100x100.jpg"),
+				
+				// imagem JPG quadrada < 200 x 200
+				getHttpEntity("225x225.jpg"),
+				
+				// imagem JPG quadrada == 200 x 200
+				getHttpEntity("200x200.jpg"),
+				
+				// imagem PNG
+				getHttpEntity("700x720.png"),
+
+				// imagem com mais de 1 mb
+				getHttpEntity("1mb.png"),		
+		};
+	}
+
+	private HttpEntity<LinkedMultiValueMap<String, ClassPathResource>> getHttpEntity(String fileName) {
+		//InputStream is = getClass().getClassLoader().getResourceAsStream("profile_pictures/"+fileName);
+		
+		
+		LinkedMultiValueMap<String, ClassPathResource> map = new LinkedMultiValueMap<String, ClassPathResource>();
+		map.add("file", new ClassPathResource("./profile_pictures/"+fileName));
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		
+		HttpEntity<LinkedMultiValueMap<String, ClassPathResource>> requestEntity = new HttpEntity<LinkedMultiValueMap<String, ClassPathResource>>(map, headers);
+				
+		
+		return requestEntity;
+	}
 
 }
+

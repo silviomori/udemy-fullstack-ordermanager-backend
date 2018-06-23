@@ -47,6 +47,10 @@ public class CustomerService {
 	
 	@Value("${img.customer.profile.prefix}")
 	private String imgProfilePrefix;
+
+	@Value("${img.customer.profile.dimension}")
+	private Integer imgProfileDimension;
+
 	
 	public Customer fetch(Integer id) throws ObjectNotFoundException, AuthorizationException {
 		UserSpringSecurity authenticatedUser = UserService.authenticated();
@@ -158,6 +162,10 @@ public class CustomerService {
 
 		BufferedImage jpgBufferedImage = imageService.getJpgImageFromFile(multipartFile);
 		
+		jpgBufferedImage = imageService.cropSquare(jpgBufferedImage);
+		
+		jpgBufferedImage = imageService.resize(jpgBufferedImage, imgProfileDimension);
+
 		String fileName = imgProfilePrefix + authenticatedUser.getId() +".jpg";
 		
 		return s3Service.uploadFile(
