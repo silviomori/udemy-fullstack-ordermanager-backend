@@ -51,6 +51,7 @@ import br.com.technomori.ordermanager.dto.InsertCustomerDTO;
 public class CustomerTest {
 
 	private static Logger log = Logger.getLogger(CustomerTest.class.getName());
+	private static int PIN = 0;
 
 	private final String BASE_PATH = TestSuite.SERVER_ADDRESS+"/customers";
 
@@ -115,6 +116,26 @@ public class CustomerTest {
 		restTemplate.postForEntity(TestSuite.SERVER_ADDRESS+"/login", credentials, Void.class);
 	}
 
+	@Test
+	private void fetchCustomerByEmail() {
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
+		
+		creatingCustomer(dto);
+		
+		RestTemplate restTemplate = RestTemplateFactory.getRestTemplate();
+		doLogin(dto, restTemplate);
+		
+		String uri = BASE_PATH+"/email?value="+dto.getEmail();
+		ResponseEntity<Customer> responseEntity = restTemplate.getForEntity(uri, Customer.class);
+		
+		assertThat(responseEntity).isNotNull();
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+
+		Customer responseCustomer = responseEntity.getBody();
+		assertThat(responseCustomer).isNotNull();
+		assertThat(responseCustomer.getEmail()).isEqualTo(dto.getEmail());
+	}
+	
 	@Test(dependsOnMethods = "creatingCustomerTest")
 	public void fetchAll() {
 		ResponseEntity<List> responseEntity = RestTemplateFactory.getRestTemplateAdminProfile().getForEntity(BASE_PATH, List.class);
@@ -193,7 +214,7 @@ public class CustomerTest {
 		 for(int i = 1; i < 10; ++i) {
 			 URI responseUri = RestTemplateFactory.getRestTemplateNoProfile().postForLocation(
 				 BASE_PATH,
-				 getGenericCustomerToInsert(i));
+				 getGenericCustomerToInsert());
 			 addedCustomerUriList.add(responseUri);
 		 }
 
@@ -222,7 +243,7 @@ public class CustomerTest {
 	
 	@Test
 	public void validatingNameOnInsert() {
-		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 		dto.setName("");
 		
 		try {
@@ -322,7 +343,7 @@ public class CustomerTest {
 
 	@Test
 	public void validatingEmailOnInsert() {
-		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 		dto.setEmail("");
 
 		try {
@@ -347,7 +368,7 @@ public class CustomerTest {
 
 	@Test
 	public void validatingEmailUniquenessOnInsert() {
-		InsertCustomerDTO dto = getGenericCustomerToInsert(1000);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 		
 		// Customer must be created successfully
 		creatingCustomer(dto);
@@ -391,8 +412,7 @@ public class CustomerTest {
 	
 	@Test
 	public void validatingEmailUniquenessOnUpdate() {
-		int pin = 2000;
-		InsertCustomerDTO dto = getGenericCustomerToInsert(pin);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 
 		// Customer must be created successfully
 		URI responseURI = creatingCustomer(dto);
@@ -414,7 +434,7 @@ public class CustomerTest {
 		assertThat(customer.getName()).isEqualTo(updatedName);
 
 		// Inserting a new customer, with all different data
-		dto = getGenericCustomerToInsert(++pin);
+		dto = getGenericCustomerToInsert();
 		responseURI = creatingCustomer(dto);
 
 		// Updating the new customer with an already used email
@@ -433,7 +453,7 @@ public class CustomerTest {
 
 	@Test
 	public void validatingCPFOnInsert() {
-		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 		dto.setCustomerType(CustomerType.INDIVIDUAL);
 		dto.setDocumentNumber("112233");
 
@@ -450,7 +470,7 @@ public class CustomerTest {
 
 	@Test
 	public void validatingCNPJOnInsert() {
-		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 		dto.setCustomerType(CustomerType.CORPORATE);
 		dto.setDocumentNumber("112233");
 
@@ -467,7 +487,7 @@ public class CustomerTest {
 
 	@Test
 	public void validatingAddressOnInsert() {
-		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 		dto.setAddresses(new ArrayList<InsertAddressDTO>());
 		try {
 			creatingCustomer(dto); // must throw an exception
@@ -478,7 +498,7 @@ public class CustomerTest {
 			return;
 		}
 		
-		dto = getGenericCustomerToInsert(1);
+		dto = getGenericCustomerToInsert();
 		dto.getAddresses().get(0).setStreet("");
 		try {
 			creatingCustomer(dto); // must throw an exception
@@ -489,7 +509,7 @@ public class CustomerTest {
 			return;
 		}
 
-		dto = getGenericCustomerToInsert(1);
+		dto = getGenericCustomerToInsert();
 		dto.getAddresses().get(0).setNumber("");
 		try {
 			creatingCustomer(dto); // must throw an exception
@@ -500,7 +520,7 @@ public class CustomerTest {
 			return;
 		}
 
-		dto = getGenericCustomerToInsert(1);
+		dto = getGenericCustomerToInsert();
 		dto.getAddresses().get(0).setZipCode("");
 		try {
 			creatingCustomer(dto); // must throw an exception
@@ -511,7 +531,7 @@ public class CustomerTest {
 			return;
 		}
 
-		dto = getGenericCustomerToInsert(1);
+		dto = getGenericCustomerToInsert();
 		dto.getAddresses().get(0).setCityId(null);
 		try {
 			creatingCustomer(dto); // must throw an exception
@@ -526,7 +546,7 @@ public class CustomerTest {
 
 	@Test
 	public void validatingPhoneNotNullOnInsert() {
-		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 		dto.setPhoneNumbers(new HashSet<String>());
 
 		try {
@@ -542,7 +562,7 @@ public class CustomerTest {
 
 	@Test
 	public void validatingCustomerTypeNotNullOnInsert() {
-		InsertCustomerDTO dto = getGenericCustomerToInsert(1);
+		InsertCustomerDTO dto = getGenericCustomerToInsert();
 		dto.setCustomerType(null);
 
 		try {
@@ -606,11 +626,11 @@ public class CustomerTest {
 
 
 		// POST
-		InsertCustomerDTO insertCustomerDTO_1 = getGenericCustomerToInsert(997);
+		InsertCustomerDTO insertCustomerDTO_1 = getGenericCustomerToInsert();
 		URI uriInsertedCustomer_1 = RestTemplateFactory.getRestTemplateNoProfile().postForLocation(BASE_PATH, insertCustomerDTO_1);
-		InsertCustomerDTO insertCustomerDTO_2 = getGenericCustomerToInsert(998);
+		InsertCustomerDTO insertCustomerDTO_2 = getGenericCustomerToInsert();
 		URI uriInsertedCustomer_2 = RestTemplateFactory.getRestTemplateCustomerProfile().postForLocation(BASE_PATH, insertCustomerDTO_2);
-		InsertCustomerDTO insertCustomerDTO_3 = getGenericCustomerToInsert(999);
+		InsertCustomerDTO insertCustomerDTO_3 = getGenericCustomerToInsert();
 		URI uriInsertedCustomer_3 = RestTemplateFactory.getRestTemplateAdminProfile().postForLocation(BASE_PATH, insertCustomerDTO_3);
 		
 		
@@ -733,24 +753,25 @@ public class CustomerTest {
 		return responseCustomer;
 	}
 	
-	private InsertCustomerDTO getGenericCustomerToInsert(int pin) {
+	private InsertCustomerDTO getGenericCustomerToInsert() {
+		PIN++; // increment the PIN value to generate a unique customer.
 		InsertAddressDTO address = InsertAddressDTO.builder()
-				.street("5th Avenue"+pin)
-				.number("5009"+pin)
-				.complement("ap 92"+pin)
-				.district("Alphaville"+pin)
-				.zipCode("11223-001"+pin)
+				.street("5th Avenue"+PIN)
+				.number("5009"+PIN)
+				.complement("ap 92"+PIN)
+				.district("Alphaville"+PIN)
+				.zipCode("11223-001"+PIN)
 				.cityId(1)
 				.build();
 
 		InsertCustomerDTO customer = InsertCustomerDTO.builder()
-				.name("Silvio Mori Neto"+pin)
-				.email("silviomori@gmail.com"+pin)
+				.name("Silvio Mori Neto"+PIN)
+				.email("silviomori@gmail.com"+PIN)
 				.documentNumber("11122233344")
 				.customerType(CustomerType.INDIVIDUAL)
 				.address(address)
-				.phoneNumber("11-99890-9988"+pin)
-				.phoneNumber("11-99890-9989"+pin)
+				.phoneNumber("11-99890-9988"+PIN)
+				.phoneNumber("11-99890-9989"+PIN)
 				.password("123")
 				.build();
 

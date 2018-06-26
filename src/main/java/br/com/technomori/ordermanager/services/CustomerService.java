@@ -67,6 +67,21 @@ public class CustomerService {
 
 	}
 	
+	public Customer fetchByEmail(String email) {
+		UserSpringSecurity authenticatedUser = UserService.authenticated();
+		if( (authenticatedUser == null) || 
+			(!authenticatedUser.getUsername().equals(email) && !authenticatedUser.hasRole(UserProfile.ADMIN)) ) {
+			throw new AuthorizationException("Access Denied");
+		}
+		
+		Customer customer = repository.findByEmail(email);
+		if( customer == null ) {
+			throw new ObjectNotFoundException("Object not found: TYPE: "+Customer.class.getName()+", email: "+email);
+		}
+		
+		return customer;
+	}
+
 	public List<CustomerDTO> fetchAll() {
 		List<Customer> customerList = repository.findAll();
 		List<CustomerDTO> customerDTOList = customerList.stream()

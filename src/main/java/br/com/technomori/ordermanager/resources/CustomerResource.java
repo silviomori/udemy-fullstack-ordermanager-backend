@@ -36,6 +36,12 @@ public class CustomerResource {
 		return ResponseEntity.ok().body(customer);
 	}
 
+	@RequestMapping( method = RequestMethod.GET, value="/email")
+	public ResponseEntity<Customer> fetchByEmail(@RequestParam(value="value") String email) {
+		Customer customer = service.fetchByEmail(email);
+		return ResponseEntity.ok(customer);
+	}
+	
 	@RequestMapping(method=RequestMethod.GET)
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<List<CustomerDTO>> fetchAll() {
