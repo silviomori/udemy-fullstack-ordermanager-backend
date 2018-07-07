@@ -1,6 +1,7 @@
 package br.com.technomori.ordermanager.dto;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -48,5 +49,5 @@ public class InsertCustomerDTO implements Serializable {
 	private Set<String> phoneNumbers;
 	
 	@Singular
-	private Set<UserProfile> userProfiles;	
+	private Set<UserProfile> userProfiles = new HashSet<UserProfile>();
 }

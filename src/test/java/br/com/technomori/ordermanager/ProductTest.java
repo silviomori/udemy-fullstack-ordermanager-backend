@@ -33,13 +33,13 @@ public class ProductTest {
 	}
 
 	@Test(dataProvider="fetchingProductsProvider")
-	public void fetchingProducts(String productName, String categoryIds, Integer numberOfProductsExpected) {
+	public void fetchingProducts(String productName, String categoryId, Integer numberOfProductsExpected) {
 		ResponseEntity<PagedResources<ProductDTO>> responseEntity = RestTemplateFactory.getRestTemplateNoProfile().exchange(
 				BASE_PATH
 				+ "/?"
 				+ "productName="+productName
 				+ "&"
-				+ "categoryIds="+categoryIds
+				+ "categoryId="+categoryId
 				, HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<ProductDTO>>() {}
 				);
 		

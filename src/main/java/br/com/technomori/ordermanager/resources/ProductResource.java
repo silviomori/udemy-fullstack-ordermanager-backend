@@ -31,15 +31,15 @@ public class ProductResource {
 
 	@RequestMapping(method=RequestMethod.GET)
 	public ResponseEntity<Page<ProductDTO>> pagingAll(
-			@RequestParam(value="productName", defaultValue="or") String productName,
-			@RequestParam(value="categoryIds", defaultValue="") String categoryIds,
+			@RequestParam(value="productName", defaultValue="") String productName,
+			@RequestParam(value="categoryId", defaultValue="") String categoryId,
 			@RequestParam(value="pageNumber", defaultValue="0") Integer pageNumber,
 			@RequestParam(value="linerPerPage", defaultValue="24") Integer linesPerPage,
 			@RequestParam(value="direction", defaultValue="ASC") String direction,
 			@RequestParam(value="orderBy", defaultValue="name") String ... orderBy) {
 		
 		String productNameDecoded = URL.decodeParam(productName);
-		List<Integer> categoryIdList = URL.decodeIntList(categoryIds);
+		List<Integer> categoryIdList = URL.decodeIntList(categoryId);
 		
 		Page<Product> pageProduct = service.search(
 				productNameDecoded,
