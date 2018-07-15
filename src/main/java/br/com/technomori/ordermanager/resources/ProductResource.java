@@ -34,7 +34,7 @@ public class ProductResource {
 			@RequestParam(value="productName", defaultValue="") String productName,
 			@RequestParam(value="categoryId", defaultValue="") String categoryId,
 			@RequestParam(value="pageNumber", defaultValue="0") Integer pageNumber,
-			@RequestParam(value="linerPerPage", defaultValue="24") Integer linesPerPage,
+			@RequestParam(value="linesPerPage", defaultValue="24") Integer linesPerPage,
 			@RequestParam(value="direction", defaultValue="ASC") String direction,
 			@RequestParam(value="orderBy", defaultValue="name") String ... orderBy) {
 		

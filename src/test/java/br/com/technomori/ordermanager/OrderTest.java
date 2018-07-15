@@ -137,7 +137,7 @@ public class OrderTest {
 		 */
 		//do {
 			ResponseEntity<PagedResources<Order>> responseEntity =
-					RestTemplateFactory.getRestTemplateCustomerProfile().exchange(BASE_PATH+"/paging?pageNumber=0&linerPerPage=5",
+					RestTemplateFactory.getRestTemplateCustomerProfile().exchange(BASE_PATH+"/paging?pageNumber=0&linesPerPage=5",
 	                HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<Order>>() {});
 			
 			assertThat(responseEntity).isNotNull();

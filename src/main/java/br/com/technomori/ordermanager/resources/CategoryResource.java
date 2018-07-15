@@ -43,7 +43,7 @@ public class CategoryResource {
 	@RequestMapping(method=RequestMethod.GET, value="/paging")
 	public ResponseEntity<Page<CategoryDTO>> pagingAll(
 			@RequestParam(value="pageNumber", defaultValue="0") Integer pageNumber,
-			@RequestParam(value="linerPerPage", defaultValue="24") Integer linesPerPage,
+			@RequestParam(value="linesPerPage", defaultValue="24") Integer linesPerPage,
 			@RequestParam(value="direction", defaultValue="ASC") String direction,
 			@RequestParam(value="orderBy", defaultValue="name") String ... orderBy) {
 		Page<CategoryDTO> page = service.pagingAll(pageNumber, linesPerPage, direction, orderBy);

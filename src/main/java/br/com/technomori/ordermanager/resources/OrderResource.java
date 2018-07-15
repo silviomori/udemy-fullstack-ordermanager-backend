@@ -34,7 +34,7 @@ public class OrderResource {
 	@RequestMapping(method=RequestMethod.GET, value="/paging")
 	public ResponseEntity<Page<Order>> pagingAll(
 			@RequestParam(value="pageNumber", defaultValue="0") Integer pageNumber,
-			@RequestParam(value="linerPerPage", defaultValue="24") Integer linesPerPage,
+			@RequestParam(value="linesPerPage", defaultValue="24") Integer linesPerPage,
 			@RequestParam(value="direction", defaultValue="DESC") String direction,
 			@RequestParam(value="orderBy", defaultValue="instant") String ... orderBy) {
 		Page<Order> page = service.pagingAllByUser(pageNumber, linesPerPage, direction, orderBy);

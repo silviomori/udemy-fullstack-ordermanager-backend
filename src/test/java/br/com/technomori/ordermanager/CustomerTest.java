@@ -224,7 +224,7 @@ public class CustomerTest {
 		 * TODO: Make tests to all RequestParam
 		 */
 		//do {
-			ResponseEntity<PagedResources<CustomerDTO>> responseEntity = RestTemplateFactory.getRestTemplateAdminProfile().exchange(BASE_PATH + "/paging?pageNumber=2&linerPerPage=5",
+			ResponseEntity<PagedResources<CustomerDTO>> responseEntity = RestTemplateFactory.getRestTemplateAdminProfile().exchange(BASE_PATH + "/paging?pageNumber=2&linesPerPage=5",
 					HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<CustomerDTO>>() {
 					});
 	

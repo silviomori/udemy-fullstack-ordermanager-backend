@@ -140,7 +140,7 @@ public class CategoryTest {
 		 */
 		//do {
 			ResponseEntity<PagedResources<CategoryDTO>> responseEntity =
-					RestTemplateFactory.getRestTemplateNoProfile().exchange(BASE_PATH+"/paging?pageNumber=2&linerPerPage=5",
+					RestTemplateFactory.getRestTemplateNoProfile().exchange(BASE_PATH+"/paging?pageNumber=2&linesPerPage=5",
 	                HttpMethod.GET, null, new ParameterizedTypeReference<PagedResources<CategoryDTO>>() {});
 			
 			assertThat(responseEntity).isNotNull();
