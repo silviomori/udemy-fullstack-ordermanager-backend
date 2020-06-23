@@ -6,12 +6,12 @@ https://www.udemy.com/spring-boot-ionic/
 This project put together some technologies, such as:
 
 * **Backend**: [https://github.com/silviomori/udemy-ionic-ordermanager-backend](https://github.com/silviomori/udemy-ionic-ordermanager-backend)  
-	* Java 8
-	* Spring Boot 2.0.2
+	* Java 11.0.7
+	* Spring Boot 2.3.1
 	* RESTful Web Services
 	* JWT - JSON Web Tokens
 	* Apache Tomcat Server
-	* Maven
+	* Apache Maven
 * **Frontend**: [https://github.com/silviomori/udemy-ionic-ordermanager-frontend](https://github.com/silviomori/udemy-ionic-ordermanager-frontend)
 	* Ionic Framework
 	* Angular Platform
@@ -20,7 +20,7 @@ This project put together some technologies, such as:
 
 ## Dependencies
 ### Configure Your Environment
-- Java JDK 8: [https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+- Java JDK 11.0.7 (LTS): [https://www.oracle.com/java/technologies/javase-jdk11-downloads.html](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
 - Spring Tools 4 for Eclipse: [https://spring.io/tools](https://spring.io/tools)
 
 ###  External Tools
@@ -44,3 +44,4 @@ Rebuild the project in STS to have all the compilation problems fixed.
 
 ## Launch the Application
 Navigate on the project files to `br.com.technomori.ordermanager`, do a right-click on `OrderManagerApplication.java` and choose `Run As` and `Spring Boot App`.
+
