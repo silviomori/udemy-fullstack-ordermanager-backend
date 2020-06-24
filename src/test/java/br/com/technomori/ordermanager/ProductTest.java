@@ -79,7 +79,7 @@ public class ProductTest {
 			new Object[] { "er", "4", 2},
 			new Object[] { "er", "1,2,3,4", 2},
 			new Object[] { "er", "", 0},
-			new Object[] { "", "1,2,3,4", 0}
+			new Object[] { "", "1,2,3,4", 7}
 		};
 	}
 	
